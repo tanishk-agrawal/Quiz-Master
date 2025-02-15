@@ -3,24 +3,21 @@ from flask_security import Security, SQLAlchemyUserDatastore
 
 from application.config import config
 from application import routes
-
+from application.models import db, User, Role
+from application.initial_data import create_initial_data
 
 def create_app():
     app = Flask(__name__)
     
     config(app)
-    # db.init_app(app)
+    db.init_app(app)
 
-    # with app.app_context():
-        # from models import User, Role
-        # from flask_security import SQLAlchemyUserDatastore
-
-        # user_datastore = SQLAlchemyUserDatastore(db, User, Role)
-        # security.init_app(app, user_datastore)
+    with app.app_context():
+        user_datastore = SQLAlchemyUserDatastore(db, User, Role)
+        app.security = Security(app, user_datastore)
         
-        # db.create_all()
-        # create_initial_data.create_data(user_datastore)
-
+        db.create_all()
+        create_initial_data(user_datastore)
 
     # views.create_views(app, user_datastore)
     # resources.api.init_app(app)
