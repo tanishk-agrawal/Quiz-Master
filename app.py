@@ -5,6 +5,7 @@ from application.config import config
 from application import routes
 from application.models import db, User, Role
 from application.initial_data import create_initial_data
+from application.resources import api
 
 def create_app():
     app = Flask(__name__)
@@ -19,9 +20,8 @@ def create_app():
         db.create_all()
         create_initial_data(user_datastore)
 
-    # views.create_views(app, user_datastore)
-    # resources.api.init_app(app)
-    routes.create_routes(app)
+    api.init_app(app)
+    routes.create_routes(app, user_datastore)
     return app
 
 if __name__ == "__main__":

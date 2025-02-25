@@ -7,4 +7,6 @@ def config(app):
     app.config['SECURITY_TOKEN_MAX_AGE'] = 3600 #1hr 
     app.config['SECURITY_LOGIN_WITHOUT_CONFIRMATION'] = True
 
-    app.config['WTF_CSRF_ENABLED'] = False
+    app.config['WTF_CSRF_CHECK_DEFAULT'] = False
+    app.config['SECURITY_CSRF_PROTECT_MECHANISHMS'] = []
+    app.config['SECURITY_CSRF_IGNORE_UNAUTH_ENDPOINTS'] = True

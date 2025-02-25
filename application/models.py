@@ -43,6 +43,7 @@ class Chapter(db.Model):
 class Quiz(db.Model):
     __tablename__ = 'quiz'
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), nullable=False)
     instructions = db.Column(db.String())
     start_time = db.Column(db.DateTime())
     end_time = db.Column(db.DateTime())
