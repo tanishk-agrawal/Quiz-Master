@@ -38,17 +38,18 @@ class Chapter(db.Model):
     description = db.Column(db.String())
 
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
-    quizes = db.relationship('Quiz', backref='chapter', cascade="all, delete")
+    quizzes = db.relationship('Quiz', backref='chapter', cascade="all, delete")
 
 class Quiz(db.Model):
     __tablename__ = 'quiz'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     instructions = db.Column(db.String())
-    start_time = db.Column(db.DateTime())
-    end_time = db.Column(db.DateTime())
-    time_limit = db.Column(db.Integer()) # in seconds
-
+    time_limit = db.Column(db.Integer(), nullable=False) # in minutes
+    show = db.Column(db.Boolean(), nullable=False, default=False)
+    created_on = db.Column(db.DateTime(), nullable=False)
+    deadline = db.Column(db.DateTime()) # optional
+    
     chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'), nullable=False)
     questions = db.relationship('Question', backref='quiz', cascade="all, delete")
     attempts = db.relationship('Attempt', backref='quiz', cascade="all, delete")
@@ -58,7 +59,7 @@ class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     statement = db.Column(db.String(), nullable=False)
     hint = db.Column(db.String())
-    marks = db.Column(db.Integer(), nullable=False)
+    marks = db.Column(db.Float(), nullable=False, default=1.0)
     option_a = db.Column(db.String(), nullable=False)
     option_b = db.Column(db.String(), nullable=False)
     option_c = db.Column(db.String())
@@ -75,7 +76,7 @@ class Attempt(db.Model):
     start_time = db.Column(db.DateTime())
     end_time = db.Column(db.DateTime())
     total_time = db.Column(db.Integer(), nullable=False)
-    total_marks = db.Column(db.Integer(), nullable=False)
+    total_marks = db.Column(db.Float(), nullable=False)
 
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -84,8 +85,9 @@ class Attempt(db.Model):
 class Score(db.Model):
     __tablename__ = 'score'
     id = db.Column(db.Integer, primary_key=True)
+    selected_option = db.Column(db.String(), nullable=False)
     is_correct = db.Column(db.Boolean(), nullable=False)
-    score = db.Column(db.Integer(), nullable=False)
+    score = db.Column(db.Float(), nullable=False)
 
     question_id = db.Column(db.Integer, db.ForeignKey('question.id'), nullable=False)
     attempt_id = db.Column(db.Integer, db.ForeignKey('attempt.id'), nullable=False)

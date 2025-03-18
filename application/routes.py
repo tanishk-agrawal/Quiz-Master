@@ -39,7 +39,10 @@ def create_routes(app, user_datastore : SQLAlchemyUserDatastore):
             return jsonify({"message" : "invalid input"}), 400
         
         if user_datastore.find_user(email=email):
-            return jsonify({"message" : "user already exists"}), 409
+            return jsonify({"message" : "account with email already exists"}), 409
+        
+        if user_datastore.find_user(username=username):
+            return jsonify({"message" : "username already exists"}), 409
         
         try:    
             user_datastore.create_user(email = email, username = username, password = hash_password(password), roles=['user'])
