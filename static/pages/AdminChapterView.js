@@ -281,7 +281,7 @@ export default {
             const h = parseInt(hours, 10);
             const m = parseInt(minutes, 10);            
             // Validate the hour and minute range
-            if (h < 0 || m <= 0 || m >= 60) return false;            
+            if (h < 0 || m < 0 || m >= 60 || (h === 0 && m === 0)) return false;            
             return true;
         },
 

@@ -26,7 +26,7 @@ def create_app():
 
     api.init_app(app)
     routes.create_routes(app, user_datastore)
-    profile_routes.create_routes(app)
+    profile_routes.create_routes(app, user_datastore)
     quiz_routes.create_routes(app)
 
     return app

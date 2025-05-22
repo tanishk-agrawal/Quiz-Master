@@ -1,5 +1,5 @@
 from flask_restful import Resource,  fields, reqparse, marshal
-from flask_security import auth_required, roles_required, roles_accepted
+from flask_security import auth_required, roles_required, roles_accepted, current_user
 from application.models import db, Subject, Chapter
 
 
@@ -87,7 +87,7 @@ class ChapterAPI(Resource):
         db.session.commit()
         return {'message': 'chapter deleted successfully'}, 200
     
-from application.func import minutes_to_hhmm
+from application.func import *
 
 quiz_fields = {
     'id': fields.Integer,
@@ -108,5 +108,10 @@ class ChapterQuizzesAPI(Resource):
         quizzes = chapter.quizzes
         quiz_list = []
         for quiz in quizzes:
-            quiz_list.append(marshal(quiz, quiz_fields)|{'number_of_questions': len(quiz.questions), 'time_limit_hhmm': minutes_to_hhmm(quiz.time_limit)})
+            if current_user.roles[0].name == 'user' and not quiz.show:
+                continue
+            
+            deadline = quiz.deadline.strftime("%d/%m/%Y %I:%M%p") if quiz.deadline else None
+            quiz_list.append(marshal(quiz, quiz_fields)|{'deadline_formatted': deadline, 'number_of_questions': len(quiz.questions), 
+                                                         'time_limit_hhmm': minutes_to_hhmm(quiz.time_limit), 'time_limit_formatted': minutes_to_formatted(quiz.time_limit),})
         return marshal(chapter, chapter_fields) | {'subject_name': chapter.subject.name, 'quizzes': quiz_list}, 200

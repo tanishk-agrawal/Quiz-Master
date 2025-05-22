@@ -12,11 +12,11 @@ export default {
             </div>
                 <div class="form-floating mb-2">
                     <input type="email" class="form-control" id="email" v-model="formData.email" placeholder="Email" required>
-                    <label for="email">Email</label>
+                    <label for="email"><i class="bi bi-envelope-at-fill"></i> Email</label>
                 </div>
                 <div class="form-floating mb-2">
                     <input type="password" class="form-control" id="password" v-model="formData.password" placeholder="Password" required>
-                    <label for="password">Password</label>
+                    <label for="password"><i class="bi bi-key-fill"></i> Password</label>
                 </div>
                 <button type="submit" @click="submitInfo" class="fw-bold btn btn-warning w-100">Login</button>
                 <p class="text-center mt-3">Don't have an account? <router-link to="/signup">Signup</router-link></p>
@@ -38,7 +38,7 @@ export default {
                 console.log(this.error);
                 return;
             }
-        
+            
             const origin = window.location.origin;
             const url = `${origin}/api/login`;
             const res = await fetch(url, {

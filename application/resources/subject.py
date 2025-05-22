@@ -1,5 +1,5 @@
 from flask_restful import Resource,  fields, reqparse, marshal
-from flask_security import auth_required, roles_required, roles_accepted
+from flask_security import auth_required, roles_required, roles_accepted, current_user
 from application.models import db, Subject
 
 
@@ -21,11 +21,15 @@ class SubjectAPI(Resource):
             subject = Subject.query.get(subject_id)
             if not subject:
                 return {'message': 'subject not found'}, 404
+            data = marshal(subject, subject_fields) | {'number_of_chapters': len(subject.chapters)}
         else:
-            subject = Subject.query.all()
-            if not subject:
+            subjects = Subject.query.all()
+            if not subjects:
                 return {'message': 'no subjects found'}, 404
-        return marshal(subject, subject_fields)
+            data = []
+            for subject in subjects:
+                data.append(marshal(subject, subject_fields) | {'number_of_chapters': len(subject.chapters)})
+        return data, 200
     
     @auth_required('token')
     @roles_accepted('admin')
@@ -88,5 +92,12 @@ class SubjectChaptersAPI(Resource):
     def get(self, subject_id):
         subject = Subject.query.get(subject_id)
         if not subject:
-            return {'message': 'subject not found'}, 404        
-        return marshal(subject, subject_fields) | {'chapters': marshal(subject.chapters, chapter_fields)} , 200
+            return {'message': 'subject not found'}, 404 
+        chapter_list = []    
+        for chapter in subject.chapters:
+            n=0
+            for quiz in chapter.quizzes:
+                if current_user.roles[0].name == 'user' and quiz.show:
+                    n+=1
+            chapter_list.append(marshal(chapter, chapter_fields) | {'number_of_quizzes': n})   
+        return marshal(subject, subject_fields) | {'chapters': chapter_list} , 200

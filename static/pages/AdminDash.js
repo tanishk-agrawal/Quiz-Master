@@ -1,11 +1,16 @@
 import SubjectCard from "../components/AdminSubjectCard.js"
+import ProfileCard from "../components/ProfileCard.js";
+import DateTimeCard from "../components/DateTimeCard.js";
 
 export default {
     template: `
     <div>
-        <div class="row my-3">
+        <div class="row my-3 gx-3" >
             <div class="col">
-                <h4 class="fst-italic">Welcome, Admin</h4>
+                <ProfileCard></ProfileCard>
+            </div>
+            <div class="col-auto">
+                <DateTimeCard></DateTimeCard>
             </div>
         </div>
         <hr>
@@ -63,7 +68,9 @@ export default {
         }
     },
     components: {
-        SubjectCard
+        SubjectCard,
+        ProfileCard,
+        DateTimeCard
     },
     methods: {
         async fetchSubjects() {

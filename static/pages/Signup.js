@@ -12,19 +12,19 @@ export default {
             </div>
                 <div class="form-floating mb-2">
                     <input type="text" class="form-control" id="username" v-model="formData.username" placeholder="Username" required>
-                    <label for="username">Username</label>
+                    <label for="username"><i class="bi bi-person-fill"></i> Username</label>
                 </div>
                 <div class="form-floating mb-2">
                     <input type="email" class="form-control" id="email" v-model="formData.email" placeholder="Email" required>
-                    <label for="email">Email</label>
+                    <label for="email"><i class="bi bi-envelope-at-fill"></i> Email</label>
                 </div>
                 <div class="form-floating mb-2">
                     <input type="password" class="form-control" id="password" v-model="formData.password" placeholder="Password" required>
-                    <label for="password">Password</label>
+                    <label for="password"><i class="bi bi-lock-fill"></i> Password</label>
                 </div>
                 <div class="form-floating mb-2">
                     <input type="password" class="form-control" id="cpassword" v-model="formData.cpassword" placeholder="Confirm Password" required>
-                    <label for="cpassword">Confirm Password</label>
+                    <label for="cpassword"><i class="bi bi-lock"></i> Confirm Password</label>
                 </div>
 
                 <button type="submit" @click="submitInfo" class="fw-bold btn btn-warning w-100">Signup</button>

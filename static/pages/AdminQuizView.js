@@ -14,7 +14,7 @@ export default {
                     <tr>
                         <th class="pe-3">Time Limit </th>
                         <td class="pe-3"> : </td>
-                        <td> {{timeLimitHhmm}} hours</td>
+                        <td> {{timeLimitFormat}}</td>
                     </tr>
                     <tr>
                         <th>Created On </th>
@@ -146,32 +146,13 @@ export default {
                     <label for="statement">Hint (optional)</label>
                 </div>   
 
-                <div class="input-group mb-2">
-                    <span class="input-group-text">(a)</span>
-                    <input type="text" class="form-control" placeholder="Option (a)*" v-model="questionFormData.option_a">
-                    <div class="input-group-text">
-                        <input class="form-check-input mt-0" type="radio" value="a" name="answer" v-model="questionFormData.answer" :disabled="!questionFormData.option_a">
+                <div class="input-group mb-2" v-for="i in questionFormData.no_options">
+                    <div class="form-floating">
+                        <input type="text" class="form-control" :placeholder="'Option ' + i" v-model="questionFormData.options[i-1].name" :id="i">
+                        <label :for="i">Option {{i}}</label>
                     </div>
-                </div>
-                <div class="input-group mb-2">
-                    <span class="input-group-text">(b)</span>
-                    <input type="text" class="form-control" placeholder="Option (b)*" v-model="questionFormData.option_b" :disabled="!questionFormData.option_a">
-                    <div class="input-group-text">
-                        <input class="form-check-input mt-0" type="radio" value="b" name="answer" v-model="questionFormData.answer" :disabled="!questionFormData.option_b">
-                    </div>
-                </div>
-                <div class="input-group mb-2">
-                    <span class="input-group-text">(c)</span>
-                    <input type="text" class="form-control" placeholder="Option (c)" v-model="questionFormData.option_c" :disabled="!questionFormData.option_b">
-                    <div class="input-group-text">
-                        <input class="form-check-input mt-0" type="radio" value="c" name="answer" v-model="questionFormData.answer" :disabled="!questionFormData.option_c">
-                    </div>
-                </div>
-                <div class="input-group mb-2">
-                    <span class="input-group-text">(d)</span>
-                    <input type="text" class="form-control" placeholder="Option (d)" v-model="questionFormData.option_d" :disabled="!questionFormData.option_c">
-                    <div class="input-group-text">
-                        <input class="form-check-input mt-0" type="radio" value="d" name="answer" v-model="questionFormData.answer" :disabled="!questionFormData.option_d">
+                    <div class="input-group-text px-3">
+                        <input class="form-check-input" style="transform: scale(1.2);" type="radio" :value="i" name="answer" v-model="questionFormData.correct_option">
                     </div>
                 </div>
 
@@ -181,13 +162,12 @@ export default {
                         <label for="marks">Marks</label>
                     </div>
                     <div class="col form-floating">
-                        <select class="form-select" id="correctOption" v-model="questionFormData.answer" disabled readonly>
-                            <option value="a">Option (a)</option>
-                            <option value="b">Option (b)</option>
-                            <option value="c">Option (c)</option>
-                            <option value="d">Option (d)</option>
-                        </select>
-                        <label for="correctOption">Correct Answer</label>
+                        <input type="text" class="form-control" id="answer" v-model="correctOption" placeholder="Correct Answer" disabled>
+                        <label for="answer">Correct Answer</label>
+                    </div>
+                    <div class="col ">
+                        <button @click="addOption()" class="text-center w-100 h-100 btn btn-link link-success link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover border-secondary-subtle">
+                        <i class="bi bi-plus-circle"> Add  Option</i> </button>
                     </div>
                 </div>
                 <div class="form-floating ">
@@ -215,6 +195,7 @@ export default {
             quizInstructions: '',
             timeLimit: '',
             timeLimitHhmm: '',
+            timeLimitFormat: '',
             quizShow: '',
             createdOn: '',
             deadline: '',
@@ -238,14 +219,13 @@ export default {
                 statement: '',
                 hint: '',
                 marks: 1.0,
-                option_a: '',
-                option_b: '',
-                option_c: '',
-                option_d: '',
-                answer: '',
                 remark: '',
+                options: [{name: '', is_correct: false}, {name: '', is_correct: false}],
+                no_options: 2,
+                correct_option: null,
                 quiz_id: this.quizId
             },
+            
             addQuestionerror: '',
         }
     },
@@ -259,6 +239,10 @@ export default {
             }
             return tot
         },
+        correctOption(){
+            if(this.questionFormData.correct_option === null) return ''; 
+            return `Option ${this.questionFormData.correct_option}`;
+        }
     },
     methods: {
         async fetchQuizQuestions() {
@@ -279,6 +263,7 @@ export default {
                 this.quizInstructions = data.instructions;
                 this.timeLimit = data.time_limit;
                 this.timeLimitHhmm = data.time_limit_hhmm;
+                this.timeLimitFormat = data.time_limit_formatted;
                 this.quizShow = data.show;
                 this.createdOn = data.created_on;
                 this.deadline = data.deadline;
@@ -370,7 +355,9 @@ export default {
 
         async createQuestion() {
             this.questionFormData.quiz_id = this.quizId;
+            this.questionFormData.options[this.questionFormData.correct_option - 1].is_correct = true;
             console.log(this.questionFormData);
+
             const origin = window.location.origin;
             const url = `${origin}/api/question`;
             const res = await fetch(url, {
@@ -408,15 +395,18 @@ export default {
         resetQuestionModal() {
             this.questionFormData.statement = '';
             this.questionFormData.hint = '';
-            this.questionFormData.option_a = '';
-            this.questionFormData.option_b = '';
-            this.questionFormData.option_c = '';
-            this.questionFormData.option_d = '';
-            this.questionFormData.answer = '';
+            this.questionFormData.options = [{name: '', is_correct: false}, {name: '', is_correct: false}];
+            this.questionFormData.no_options = 2;
+            this.questionFormData.correct_option = null;
             this.questionFormData.marks = 1.0;
             this.questionFormData.remark = '';
             this.questionFormData.quiz_id = this.quizId;
             this.addQuestionerror = '';
+        },
+
+        addOption() {
+            this.questionFormData.no_options += 1;
+            this.questionFormData.options.push({name: '', is_correct: false});
         }
 
     },

@@ -21,7 +21,7 @@ class User(db.Model, UserMixin):
     fs_uniquifier = db.Column(db.String(64), unique=True, nullable=False)
 
     roles = db.relationship('Role', secondary='roles_users', backref='users', cascade="all, delete")
-    attempts = db.relationship('Attempt', backref='user', cascade="all, delete")
+    attempts = db.relationship('Attempt', backref='user', cascade="all, delete-orphan")
 
 class Subject(db.Model):
     __tablename__ = 'subject'
@@ -29,7 +29,7 @@ class Subject(db.Model):
     name = db.Column(db.String(255), unique=True, nullable=False)
     description = db.Column(db.String())
 
-    chapters = db.relationship('Chapter', backref='subject', cascade="all, delete")
+    chapters = db.relationship('Chapter', backref='subject', cascade="all, delete-orphan")
 
 class Chapter(db.Model):
     __tablename__ = 'chapter'
@@ -38,7 +38,7 @@ class Chapter(db.Model):
     description = db.Column(db.String())
 
     subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
-    quizzes = db.relationship('Quiz', backref='chapter', cascade="all, delete")
+    quizzes = db.relationship('Quiz', backref='chapter', cascade="all, delete-orphan")
 
 class Quiz(db.Model):
     __tablename__ = 'quiz'
@@ -51,8 +51,8 @@ class Quiz(db.Model):
     deadline = db.Column(db.DateTime()) # optional
     
     chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'), nullable=False)
-    questions = db.relationship('Question', backref='quiz', cascade="all, delete")
-    attempts = db.relationship('Attempt', backref='quiz', cascade="all, delete")
+    questions = db.relationship('Question', backref='quiz', cascade="all, delete-orphan")
+    attempts = db.relationship('Attempt', backref='quiz', cascade="all, delete-orphan")
 
 class Question(db.Model):
     __tablename__ = 'question'
@@ -60,34 +60,39 @@ class Question(db.Model):
     statement = db.Column(db.String(), nullable=False)
     hint = db.Column(db.String())
     marks = db.Column(db.Float(), nullable=False, default=1.0)
-    option_a = db.Column(db.String(), nullable=False)
-    option_b = db.Column(db.String(), nullable=False)
-    option_c = db.Column(db.String())
-    option_d = db.Column(db.String())
-    answer = db.Column(db.String(), nullable=False)
     remark = db.Column(db.String())
 
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
-    scores = db.relationship('Score', backref='question', cascade="all, delete")
+    options = db.relationship('Option', backref='question', cascade="all, delete-orphan")    
+    scores = db.relationship('Score', backref='question', cascade="all, delete-orphan")
+
+class Option(db.Model):
+    __tablename__ = 'option'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(), nullable=False)
+    is_correct = db.Column(db.Boolean(), nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey('question.id'), nullable=False)
 
 class Attempt(db.Model):
     __tablename__ = 'attempt'
     id = db.Column(db.Integer, primary_key=True)
-    start_time = db.Column(db.DateTime())
-    end_time = db.Column(db.DateTime())
-    total_time = db.Column(db.Integer(), nullable=False)
-    total_marks = db.Column(db.Float(), nullable=False)
+    max_marks = db.Column(db.Float(), nullable=False, default=0.0)
+    marks_scored = db.Column(db.Float(), nullable=False, default=0.0)
+    started_at = db.Column(db.DateTime(), nullable=False)
+    submitted_at = db.Column(db.DateTime())
 
     quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    scores = db.relationship('Score', backref='attempt', cascade="all, delete")
+    scores = db.relationship('Score', backref='attempt', cascade="all, delete-orphan")    
 
 class Score(db.Model):
     __tablename__ = 'score'
-    id = db.Column(db.Integer, primary_key=True)
-    selected_option = db.Column(db.String(), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)    
     is_correct = db.Column(db.Boolean(), nullable=False)
-    score = db.Column(db.Float(), nullable=False)
+    marks = db.Column(db.Float(), nullable=False)
+    
+    selected_option_id = db.Column(db.Integer, db.ForeignKey('option.id'), nullable=True)
+    selected_option = db.relationship('Option', foreign_keys=[selected_option_id])
 
     question_id = db.Column(db.Integer, db.ForeignKey('question.id'), nullable=False)
     attempt_id = db.Column(db.Integer, db.ForeignKey('attempt.id'), nullable=False)
