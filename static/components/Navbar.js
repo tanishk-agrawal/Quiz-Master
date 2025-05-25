@@ -8,7 +8,7 @@ export default {
         <div class="col-auto my-auto text-end" v-if="currentRoute.meta.requiresLogin">
             <div v-if="currentRoute.meta.role == 'user'">
                 <router-link to="/dashboard" class="text-decoration-none text-dark mx-3"><i class="bi bi-house-fill"></i> Home</router-link>
-                <router-link to="/" class="text-decoration-none text-dark mx-3"><i class="bi bi-hourglass-split"></i> History</router-link>
+                <router-link to="/history" class="text-decoration-none text-dark mx-3"><i class="bi bi-hourglass-split"></i> History</router-link>
             </div>
             <div v-else>
                 <router-link to="/admin/dashboard" class="text-decoration-none text-dark mx-3"><i class="bi bi-house-fill"></i> Home</router-link>

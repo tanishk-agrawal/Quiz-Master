@@ -1,28 +1,38 @@
 export default{
     template: `
-    <div>
-        <div class="card shadow-sm p-3 mt-4">
-            <div class="row p-2 g-4">
-                <div class="col text-center">
+    <div> 
+        <div class="mt-4 card shadow-sm p-3">
+            <div class="row  g-4 ">
+                <div class="col text-center ">
                     <div class="row mb-3 text-start">
-                        <span class="h3 fw-bold"> {{result.quiz.name}}</span>                        
+                        <div class="col"><span class="h3 fw-bold"> {{result.quiz.name}}</span></div>                  
+                    </div>  
+                    <div class="row align-middle">     
+                        <div class="col "> 
+                            <div class="mt-2 fs-4 fst-italic fw-medium">You scored <br>
+                            <span class="display-5 fw-medium">{{result.marks_scored}}</span> 
+                            <span class="fs-2">/ {{result.max_marks}}</span></div> 
+                        </div> 
+                    </div> 
+                </div>
+                <div class="col ">
+                    <div class=" d-flex justify-content-center align-items-center">
+                        <div class="rounded-circle bg-success d-flex justify-content-center align-items-center" 
+                        style="width: 200px; height: 200px; !important" :style="percentageStyle">
+                            <span class="rounded-circle bg-light d-flex justify-content-center align-items-center display-5 fw-bold" 
+                            style="width: 150px; height: 150px;">{{result.percentage}}%</span>
+                        </div>
+                    </div>                    
+                </div>
+                <div class="col ">
+                    <div class="row fw-bold mt-2 fs-5">
+                        <div class="col card p-2 text-center text-primary mx-2">Total Questions<div class="fs-3">{{result.questions.length}}</div></div>
+                        <div class="col card p-2 text-center text-success mx-2">Correct<div class="fs-3">{{nCorrect}}</div></div>
                     </div>
                     <div class="row fw-bold mt-2 fs-5">
-                        <div class="col card p-2 text-center text-primary mx-2">Total Questions<div class="display-6">{{result.questions.length}}</div></div>
-                        <div class="col card p-2 text-center text-success mx-2">Correct<div class="display-6">{{nCorrect}}</div></div>
-                        <div class="col card p-2 text-center text-danger mx-2">Incorrect<div class="display-6">{{nIncorrect}}</div> </div>
-                        <div class="col card p-2 text-center text-secondary mx-2">Unattempted<div class="display-6">{{nUnattempted}}</div></div>
+                        <div class="col card p-2 text-center text-danger mx-2">Incorrect<div class="fs-3">{{nIncorrect}}</div> </div>
+                        <div class="col card p-2 text-center text-secondary mx-2">Unattempted<div class="fs-3">{{nUnattempted}}</div></div>
                     </div>
-                </div>
-                <div class="col-5">
-                    <div class="card border-0 d-flex justify-content-center align-items-center">
-                        <div class="rounded-circle bg-success d-flex justify-content-center align-items-center" 
-                        style="width: 140px; height: 140px; !important" :style="percentageStyle">
-                            <span class="rounded-circle bg-light d-flex justify-content-center align-items-center display-6  " 
-                            style="width: 100px; height: 100px;">{{result.percentage}}%</span>
-                        </div>
-                        <div class="mt-2 fst-italic fs-5">You scored <b>{{result.marks_scored}}</b> out of {{result.max_marks}}</div>
-                    </div>                    
                 </div>
             </div>
         </div>

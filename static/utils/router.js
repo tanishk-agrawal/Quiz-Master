@@ -10,6 +10,7 @@ import UserQuizView from "../pages/UserQuizView.js";
 import UserQuizAttempt from "../pages/UserQuizAttempt.js";
 import UserQuizResult from "../pages/UserQuizResult.js";
 import UserSubjectView from "../pages/UserSubjectView.js";
+import UserAttemptHistory from "../pages/UserAttemptHistory.js";
 
 import AdminDash from "../pages/AdminDash.js";
 import AdminSubjectView from "../pages/AdminSubjectView.js";
@@ -30,6 +31,7 @@ const routes = [
     { path: "/quiz/:id/attempt", component: UserQuizAttempt, meta: { requiresLogin: true, role: "user" } },
     { path: "/quiz/:id/result", component: UserQuizResult, meta: { requiresLogin: true, role: "user" } },
     { path: "/subject/:id", component: UserSubjectView, meta: { requiresLogin: true, role: "user" } },
+    { path: "/history", component: UserAttemptHistory, meta: { requiresLogin: true, role: "user" } },
 
     // admin routes
     { path: "/admin/dashboard", component: AdminDash, meta: { requiresLogin: true, role: "admin" } },

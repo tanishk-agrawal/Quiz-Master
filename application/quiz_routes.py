@@ -355,3 +355,21 @@ def create_routes(app):
                                            'chapter': {'id': quiz.chapter_id, 'name': quiz.chapter.name}, 
                                            'subject': {'id': quiz.chapter.subject_id, 'name': quiz.chapter.subject.name}}, 
                 'marks_scored': attempt.marks_scored, 'max_marks': attempt.max_marks, 'percentage': round(percent,1), 'questions': scores}, 200
+    
+    @app.route('/api/user/history', methods=['GET'])
+    @auth_required('token')
+    def get_user_history():
+        attempts = Attempt.query.filter(Attempt.user_id == current_user.id).order_by(Attempt.submitted_at.desc()).all()
+        if not attempts:
+            return jsonify({'message': 'no attempts found'}), 404
+
+        list = []
+        for attempt in attempts:
+            percent = (attempt.marks_scored / attempt.max_marks) * 100
+            quiz = {'id': attempt.quiz_id, 'name': attempt.quiz.name, 
+                    'chapter': {'id': attempt.quiz.chapter_id, 'name': attempt.quiz.chapter.name}, 
+                    'subject': {'id': attempt.quiz.chapter.subject_id, 'name': attempt.quiz.chapter.subject.name}}
+            list.append({'id': attempt.id, 'quiz': quiz, 'marks_scored': attempt.marks_scored, 'max_marks': attempt.max_marks, 'percentage': round(percent,1),
+                          'submitted_at': datetime_to_string(attempt.submitted_at), 'started_at': datetime_to_string(attempt.started_at)})
+            
+        return  list, 200
