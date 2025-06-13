@@ -94,9 +94,9 @@ quiz_fields = {
     'name': fields.String,
     'instructions': fields.String,
     'time_limit': fields.Integer,
-    'show': fields.Boolean,
     'created_on': fields.String,
-    'deadline': fields.String,
+    'scheduled_on': fields.String,
+    'show': fields.Boolean,
     'chapter_id': fields.Integer
 }
 class ChapterQuizzesAPI(Resource):
@@ -111,7 +111,7 @@ class ChapterQuizzesAPI(Resource):
             if current_user.roles[0].name == 'user' and not quiz.show:
                 continue
             
-            deadline = quiz.deadline.strftime("%d/%m/%Y %I:%M%p") if quiz.deadline else None
-            quiz_list.append(marshal(quiz, quiz_fields)|{'deadline_formatted': deadline, 'number_of_questions': len(quiz.questions), 
+            shedule = quiz.scheduled_on.strftime("%d/%m/%Y %I:%M%p")
+            quiz_list.append(marshal(quiz, quiz_fields)|{'scheduled_on_formatted': shedule, 'number_of_questions': len(quiz.questions), 
                                                          'time_limit_hhmm': minutes_to_hhmm(quiz.time_limit), 'time_limit_formatted': minutes_to_formatted(quiz.time_limit),})
         return marshal(chapter, chapter_fields) | {'subject_name': chapter.subject.name, 'quizzes': quiz_list}, 200

@@ -1,15 +1,15 @@
 export default {
     template: `
     <div>
-    <div class="card shadow-sm m-2" :class="{'border-danger border-2': !show}" style="width: 16rem;">
+    <div class="card shadow-sm m-2" :class="{'border-danger border-2': !quiz.show}" style="width: 16rem;">
         <div class="card-body">
-        <router-link :to="'/admin/quiz/' + id" class="link-dark link-underline-opacity-0">
-            <h5 class="card-title">{{name}}</h5>
+        <router-link :to="'/admin/quiz/' + quiz.id" class="link-dark link-underline-opacity-0">
+            <h5 class="card-title">{{quiz.name}}</h5>
         </router-link>   
         <p class="card-text">
         <small class="text-dark">
             <ul style="list-style-type:none; margin:0; padding:0">
-                <li>Questions : <span :class="{'text-danger fw-bold': number_of_questions == 0}">{{number_of_questions}}</span></li>
+                <li>Questions : <span :class="{'text-danger fw-bold': quiz.number_of_questions == 0}">{{quiz.number_of_questions}}</span></li>
                 <li>Created on : {{formattedDate}}</li>
             </ul>
         </small>
@@ -17,13 +17,13 @@ export default {
 
         </div>
         <div class="card-footer fw-bold d-flex justify-content-between">
-            <router-link :to="'/admin/quiz/' + id" class="link-body-emphasis link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover"><i class="bi bi-box-arrow-up-right"></i> View </router-link>
-            <a href="#" class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" data-bs-toggle="modal" :data-bs-target="'#editQuizModal' + id"><i class="bi bi-pencil-square"></i> Edit</a>
-            <a href="#" class="link-danger link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover " data-bs-toggle="modal" :data-bs-target="'#deleteQuizModal' + id"><i class="bi bi-trash"></i> Delete</a>
+            <router-link :to="'/admin/quiz/' + quiz.id" class="link-body-emphasis link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover"><i class="bi bi-box-arrow-up-right"></i> View </router-link>
+            <a href="#" class="link-primary link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover" data-bs-toggle="modal" :data-bs-target="'#editQuizModal' + quiz.id"><i class="bi bi-pencil-square"></i> Edit</a>
+            <a href="#" class="link-danger link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover " data-bs-toggle="modal" :data-bs-target="'#deleteQuizModal' + quiz.id"><i class="bi bi-trash"></i> Delete</a>
         </div>
     </div>
 
-        <div class="modal fade" :id="'deleteQuizModal' + id" tabindex="-1" aria-labelledby="deleteQuizModalLabel" aria-hidden="true">
+        <div class="modal fade" :id="'deleteQuizModal' + quiz.id" tabindex="-1" aria-labelledby="deleteQuizModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
             <div class="modal-header">
@@ -32,7 +32,7 @@ export default {
             </div>
             <div class="modal-body">
                 <ul class="m-0 text-danger-emphasis">
-                    <li><b>{{name}}</b> - This quiz will be permanently deleted.</li>
+                    <li><b>{{quiz.name}}</b> - This quiz will be permanently deleted.</li>
                     <li>All the attempts of this quiz will be deleted.</li>
                     <li>This action cannot be undone.</li>
                 </ul>
@@ -44,11 +44,11 @@ export default {
         </div>
         </div>
 
-        <div class="modal fade" :id="'editQuizModal' + id" tabindex="-1" aria-labelledby="editQuizModalLabel" aria-hidden="true">
+        <div class="modal fade" :id="'editQuizModal' + quiz.id" tabindex="-1" aria-labelledby="editQuizModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
             <div class="modal-header">
-                <h1 class="modal-title fs-5" id="editQuizModalLabel">Edit Quiz - {{id}}</h1>
+                <h1 class="modal-title fs-5" id="editQuizModalLabel">Edit Quiz - {{quiz.id}}</h1>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -72,13 +72,13 @@ export default {
                 </div> 
                 <div class="row gx-2">            
                     <div class="col form-floating">
+                        <input type="datetime-local" class="form-control" id="schedule"  v-model="quizFormData.scheduled_on" placeholder="Schedule On" required>
+                        <label for="schedule">Schedule On</label>
+                    </div>            
+                    <div class="col form-floating">
                         <input type="text" class="form-control" id="timeLimit" v-model="quizFormData.time_limit_hhmm" placeholder="Time Limit (hh:mm)" required>
                         <label for="timeLimit">Time Limit (hh:mm)</label>
-                    </div>
-                    <div class="col form-floating">
-                        <input type="datetime-local" class="form-control" id="deadline"  v-model="quizFormData.deadline" placeholder="Deadline (optional)" required>
-                        <label for="deadline">Deadline (optional)</label>
-                    </div>
+                    </div>  
                 </div>
             </div>
             <div class="modal-footer justify-content-between">
@@ -93,39 +93,8 @@ export default {
     </div>
     `,
     props: {
-        name:{
-            type: String,
-            required: true
-        },
-        instructions: {
-            type: String,
-            required: true
-        },
-        time_limit: {
-            type: Number,
-            required: true
-        },
-        time_limit_hhmm: {
-            type: String,
-            required: true
-        },
-        show: {
-            type: Boolean,
-            required: true
-        },
-        created_on: {
-            type: String,
-            required: true
-        },
-        deadline: {
-            type: String
-        },
-        number_of_questions: {
-            type: Number,
-            required: true
-        },
-        id: {
-            type: Number,
+        quiz: {
+            type: Object,
             required: true
         },
         subjectId: {
@@ -147,25 +116,28 @@ export default {
     },
     data() {
         return {
-            quizFormData: {
-                name: this.name,
-                instructions: this.instructions,
-                time_limit_hhmm: this.time_limit_hhmm,
-                deadline: this.deadline,
-                chapter_id: this.chapterId
-            },
+            quizFormData: {},
             editQuizerror: "",
         }
     },
+    created(){
+        this.quizFormData = {
+            name: this.quiz.name,
+            instructions: this.quiz.instructions,
+            time_limit_hhmm: this.quiz.time_limit_hhmm,
+            scheduled_on: this.quiz.scheduled_on,
+            chapter_id: this.quiz.chapterId
+        };
+    },
     computed: {
         formattedDate() {
-            return new Date(this.created_on).toLocaleString('en-IN');
+            return new Date(this.quiz.created_on).toLocaleString('en-IN');
         },
     },
     methods: {
         async deleteQuiz() {
             const origin = window.location.origin;
-            const url = `${origin}/api/quiz/${this.id}`;
+            const url = `${origin}/api/quiz/${this.quiz.id}`;
             const res = await fetch(url, {
                 method: "DELETE",
                 headers: {
@@ -181,8 +153,7 @@ export default {
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 }
                 const errorData = await res.json();
                 console.error(errorData);
@@ -191,7 +162,7 @@ export default {
 
         async editQuiz() {
             const origin = window.location.origin;
-            const url = `${origin}/api/quiz/${this.id}`;
+            const url = `${origin}/api/quiz/${this.quiz.id}`;
             const res = await fetch(url, {
                 method: "POST",
                 headers: {
@@ -206,7 +177,7 @@ export default {
                 this.resetQuizModal();
                 
                 // Automatically close the modal after successful creation
-                const modalElement = document.getElementById("editQuizModal"+this.id);
+                const modalElement = document.getElementById("editQuizModal"+this.quiz.id);
                 const modalInstance = bootstrap.Modal.getInstance(modalElement);
                 if (modalInstance) modalInstance.hide();
 
@@ -214,8 +185,7 @@ export default {
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 }                
                 const errorData = await res.json();
                 console.error(errorData);
@@ -224,18 +194,18 @@ export default {
         },
 
         resetQuizModal() {
-            this.quizFormData.name = this.name;
-            this.quizFormData.instructions = this.instructions;
-            this.quizFormData.time_limit_hhmm = this.time_limit_hhmm;
-            this.quizFormData.deadline = this.deadline;
-
+            this.quizFormData.name = this.quiz.name;
+            this.quizFormData.instructions = this.quiz.instructions;
+            this.quizFormData.time_limit_hhmm = this.quiz.time_limit_hhmm;
+            this.quizFormData.scheduled_on= this.quiz.scheduled_on;
+            this.quizFormData.chapter_id = this.chapterId;
             this.editQuizerror = "";
         }
 
     },
     mounted() {
          // Reset form and error when modal is closed
-         const modalElement = document.getElementById("editQuizModal"+this.id);
+         const modalElement = document.getElementById("editQuizModal"+this.quiz.id);
          modalElement.addEventListener("hidden.bs.modal", () => {
              this.resetQuizModal();
          });

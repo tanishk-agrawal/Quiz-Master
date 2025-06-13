@@ -106,8 +106,7 @@ export default {
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 }
                 const errorData = await res.json();
                 console.error(errorData);
@@ -139,8 +138,7 @@ export default {
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 }                
                 const errorData = await res.json();
                 console.error(errorData);

@@ -39,8 +39,9 @@ export default{
                         <td>{{attempt.quiz.chapter.name}}</td>
                         <td>{{attempt.submitted_at}}</td>
                         <td>{{attempt.marks_scored}}/{{attempt.max_marks}}</td>
-                        <td><div class="progress my-1" role="progressbar">
+                        <td><div class="progress my-1 position-relative fw-bold" role="progressbar">
                                 <div class="progress-bar fw-bold" :style="progressStyle(attempt.percentage)"> {{attempt.percentage}}% </div>
+                                <div class="position-absolute top-50 start-50 translate-middle" v-if="attempt.percentage <= 0">{{attempt.percentage}}%</div>
                         </div></td>
                     </tr>
                 </tbody>
@@ -78,8 +79,7 @@ export default{
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 } 
                 const errorData = await res.json();
                 console.error(errorData);

@@ -20,7 +20,7 @@ import AdminUsersView from "../pages/AdminUsersView.js";
 
 const routes = [
     { path: "/", component: Home, meta: { requiresLogin: false } },
-    { path: "/login", component: Login, meta: { requiresLogin: false } },
+    { path: "/login", component: Login, name: "login", meta: { requiresLogin: false } },
     { path: "/signup", component: Signup, meta: { requiresLogin: false } },
     { path: "/404", component: NotFound404, meta: { requiresLogin: false, error: true } },
 
@@ -74,16 +74,6 @@ router.beforeEach((to, from, next) => {
       } else {
         next();
       }
-    }
-
-    if(localStorage.getItem('attempting')){ 
-        if(to.path != '/quiz/' + localStorage.getItem('attempting') + '/attempt') {
-            next('/quiz/' + localStorage.getItem('attempting') + '/attempt');
-        } else {
-            next();
-        }
-    } else {
-        next();
     }
 });
 

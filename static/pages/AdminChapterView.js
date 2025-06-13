@@ -24,13 +24,13 @@ export default {
                 <h4 class="fw-bold">Quizzes ({{quizzes.length}})</h4>
             </div>
             <div class="col my-auto text-end fw-bold">
-                <a href="#" class="link-success link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" data-bs-toggle="modal" data-bs-target="#addQuizModal"><i class="bi bi-plus-circle"></i> Create  Quiz</a>
+                <a href="#" class="link-success link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" data-bs-toggle="modal" data-bs-target="#addQuizModal" @click="resetQuizModal"><i class="bi bi-plus-circle"></i> Create  Quiz</a>
             </div>
         </div>
         <div v-if="quizzes.length == 0" class="text-center alert alert-warning fw-bold m-4">No Quizzes Found</div>
         <div v-else class="d-flex flex-wrap">
             <div v-for="quiz in quizzes">
-                <AdminQuizCard :name="quiz.name" :instructions="quiz.instructions" :time_limit="quiz.time_limit" :time_limit_hhmm="quiz.time_limit_hhmm" :show="quiz.show" :created_on="quiz.created_on" :deadline="quiz.deadline" :number_of_questions="quiz.number_of_questions" :id="quiz.id" :subjectId="subjectId" :subjectName="subjectName" :chapterId="chapterId" :chapterName="chapterName" @change="fetchChapterQuizzes"></AdminQuizCard>
+                <AdminQuizCard :quiz="quiz" :subjectId="subjectId" :subjectName="subjectName" :chapterId="chapterId" :chapterName="chapterName" @change="fetchChapterQuizzes"></AdminQuizCard>
             </div>
         </div>
 
@@ -113,15 +113,15 @@ export default {
                     <textarea class="form-control" id="instructions" v-model="quizFormData.instructions" placeholder="Instructions" style="height: 150px"></textarea>
                     <label for="instructions">Instructions</label>
                 </div>    
-                <div class="row gx-2">            
+                <div class="row gx-2">
+                    <div class="col form-floating">
+                        <input type="datetime-local" class="form-control" id="schedule"  v-model="quizFormData.scheduled_on" placeholder="Schedule On" required>
+                        <label for="schedule">Schedule On</label>
+                    </div>            
                     <div class="col form-floating">
                         <input type="text" class="form-control" id="timeLimit" v-model="quizFormData.time_limit_hhmm" placeholder="Time Limit (hh:mm)" required>
                         <label for="timeLimit">Time Limit (hh:mm)</label>
-                    </div>
-                    <div class="col form-floating">
-                        <input type="datetime-local" class="form-control" id="deadline"  v-model="quizFormData.deadline" placeholder="Deadline (optional)" required>
-                        <label for="deadline">Deadline (optional)</label>
-                    </div>
+                    </div>                    
                 </div>
             </div>
             <div class="modal-footer justify-content-between">
@@ -149,12 +149,23 @@ export default {
                 subject_id: this.subjectId
             },
             editChaptererror: '',
+            quizInstructions: `⚠️ Important Rules
+-One Attempt Only: You can take the quiz only once.
+-No Backtracking: Once submitted, answers cannot be changed.
+-No External Help: Do not use notes, websites, or other people to assist you.
+-Auto-Submit: The quiz will be submitted automatically when the timer ends.
 
+✅ Tips for Success
+-Read each question carefully.
+-Manage your time — don’t spend too long on any one question.
+-Check your answers if time permits.
+
+Good luck!`,
             quizFormData: {
                 name: '',
-                instructions: '',
+                instructions: this.quizInstructions,
                 time_limit_hhmm: '',
-                deadline: null,                
+                scheduled_on: '',                
                 chapter_id: this.chapterId
             },
             addQuizerror: '',
@@ -168,7 +179,7 @@ export default {
     methods:{
         async fetchChapterQuizzes() {
             const origin = window.location.origin;
-            const url = `${origin}/api/chapter/${this.chapterId}/quizzes`;
+            const url = `${origin}/api/chapter/${this.$route.params.id}/quizzes`;
             const res = await fetch(url, {
                 method: "GET",
                 headers: {
@@ -188,8 +199,7 @@ export default {
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 } else if (res.status === 404) {
                     this.$router.push("/");
                 }
@@ -216,8 +226,7 @@ export default {
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 }
                 const errorData = await res.json();
                 console.error(errorData);
@@ -248,8 +257,7 @@ export default {
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 }                
                 const errorData = await res.json();
                 console.error(errorData);
@@ -316,8 +324,7 @@ export default {
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 }                
                 const errorData = await res.json();
                 console.error(errorData);
@@ -328,9 +335,9 @@ export default {
         
         resetQuizModal(){
             this.quizFormData.name = '';
-            this.quizFormData.instructions = '';
+            this.quizFormData.instructions = this.quizInstructions;
             this.quizFormData.time_limit_hhmm = '';
-            this.quizFormData.deadline = null;
+            this.quizFormData.scheduled_on = '';
             this.quizFormData.chapter_id = this.chapterId;
             this.addQuizerror = '';
         }

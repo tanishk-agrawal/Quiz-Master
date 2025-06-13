@@ -43,9 +43,9 @@ export default{
                     <div v-if="chapter.number_of_quizzes == 0"><div class="text-muted fw-bold text-center">No Quizzes</div></div>
                     <div v-else>
                     <div class="d-flex flex-wrap">
-                        <div v-for="quiz in chapterQuizzes[chapter.id]">
+                        <span v-for="quiz in chapterQuizzes[chapter.id]">
                             <UserQuizCard :quiz="quiz"></UserQuizCard>
-                        </div>
+                        </span>
                     </div>
                     </div>
                 </div>    
@@ -81,8 +81,7 @@ export default{
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 } else if (res.status === 404) {
                     this.subject = {};
                 }
@@ -93,7 +92,7 @@ export default{
 
         async fetchChapterQuizzes(id){
             const origin = window.location.origin;
-            const url = `${origin}/api/chapter/${id}/quizzes`;
+            const url = `${origin}/api/chapter/${id}/quiz/user`;
             const res = await fetch(url, {
                 method: "GET",
                 headers: {
@@ -112,8 +111,7 @@ export default{
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 } else if (res.status === 404) {
                     this.chapterQuizzes[id] = [];
                 }

@@ -8,9 +8,9 @@ quiz_fields = {
     'name': fields.String,
     'instructions': fields.String,
     'time_limit': fields.Integer,
-    'show': fields.Boolean,
     'created_on': fields.String,
-    'deadline': fields.String,
+    'scheduled_on': fields.String,
+    'show': fields.Boolean,
     'chapter_id': fields.Integer
 }
 
@@ -68,8 +68,7 @@ class QuizQuestionsAPI(Resource):
     @auth_required('token')
     def get(self, quiz_id):
         quiz = Quiz.query.get(quiz_id)
-        if current_user.roles[0].name == 'user' and not quiz.show:
-            quiz = None
+        
         if not quiz:
             return {'message': 'quiz not found'}, 404
         questions = []
@@ -81,6 +80,9 @@ class QuizQuestionsAPI(Resource):
             questions.append(marshal(question, ques_fields)|{'options': marshal(question.options, opt_fields), 'correct_option': correct_option})
         return marshal(quiz, quiz_fields)|{'time_limit_hhmm': minutes_to_hhmm(quiz.time_limit), 
                                            'time_limit_formatted': minutes_to_formatted(quiz.time_limit),
+                                           'created_on_formatted': datetime_to_string(quiz.created_on),
+                                           'scheduled_on_formatted': datetime_to_string(quiz.scheduled_on),
+                                                       'chapter_id' : quiz.chapter.id,
                                                        'chapter_name' : quiz.chapter.name,
                                                        'subject_id' : quiz.chapter.subject.id,
                                                        'subject_name' : quiz.chapter.subject.name,

@@ -5,41 +5,56 @@ export default {
     <div>
         <div class="card  my-4 p-4">
         <div class="row">
-            <div class="col">
+            <div class="col-auto">
                 <router-link :to="'/admin/subject/' + subjectId" class=""><span class="badge text-bg-warning bg-opacity-100 mx-1">{{subjectName}}</span></router-link> <i class="bi bi-caret-right-fill"></i>
                 <router-link :to="'/admin/chapter/' + chapterId" class=""><span class="badge text-bg-warning bg-opacity-100 mx-1">{{chapterName}}</span></router-link>
                 
                 <h3 class="my-2">{{quizName}} </h3>
                 <table class="">
-                    <tr>
-                        <th class="pe-3">Time Limit </th>
-                        <td class="pe-3"> : </td>
-                        <td> {{timeLimitFormat}}</td>
-                    </tr>
-                    <tr>
-                        <th>Created On </th>
-                        <td> : </td>
-                        <td> {{createdOn}} </td>
-                    </tr>
-                    <tr>
-                        <th>Deadline </th>
-                        <td> : </td>
-                        <td><span v-if="!deadline">None</span>{{deadline}} </td>
-                    </tr>
-                    <tr v-if='questions.length > 0'>
-                        <th>Total Marks </th>
-                        <td> : </td>
-                        <td> {{totMarks}} </td>
-                    </tr>
+                <tr>
+                    <th class="pe-3">Time Limit </th>
+                    <td class="pe-3"> : </td>
+                    <td> {{timeLimitFormat}}</td>
+                </tr>
+                <tr >
+                    <th># Questions </th>
+                    <td> : </td>
+                    <td :class="numberOfQuestions == 0 ? 'text-danger fw-bold' : ''"> {{numberOfQuestions}}  </td>
+                </tr>
+                <tr >
+                    <th>Total Marks </th>
+                    <td> : </td>
+                    <td> {{totMarks}}  </td>
+                </tr>
+                <tr>
+                    <th>Created On </th>
+                    <td> : </td>
+                    <td> {{createdOn}} </td>
+                </tr>
+                <tr>
+                    <th>Scheduled On </th>
+                    <td> : </td>
+                    <td>{{scheduledOnFormatted}}</td>
+                </tr>
                 </table>
-
-                <p class="my-2" v-if='quizInstructions'><b>Instructions</b><br>{{quizInstructions}}</p>
-                <p class="my-2 text-danger" v-if='!quizShow'>*This Quiz is not visible to students, add questions to make it visible</p>
+            </div>
+            <div class="vr p-0 mx-2"></div>
+            <div class="col">
+                <p class="my-2" v-if='quizInstructions' style="white-space: pre-wrap; max-height: 200px; overflow-y: scroll"><b>Instructions</b><br>{{quizInstructions}}</p>
             </div>
             <div class="vr p-0 mx-2"></div>
             <div class="col-auto d-flex flex-column justify-content-center">
                 <button class="btn btn-primary btn-sm my-1" data-bs-toggle="modal" data-bs-target="#editQuizModal" @click='fillQuizForm'><i class="bi bi-pencil-square" ></i> &nbsp; Edit</button>
                 <button class="btn btn-danger btn-sm my-1" data-bs-toggle="modal" data-bs-target="#deleteQuizModal"><i class="bi bi-trash-fill"></i> &nbsp; Delete</button>
+                
+                <div v-if="!numberOfQuestions" style="width: 100px;">
+                    <button type="button" class="w-100 btn btn-success btn-sm my-1" disabled><i class="bi bi-eye-fill"></i> &nbsp; Publish </button>
+                </div>
+                <div v-else @click="toggleShow" style="width: 100px;">
+                    <button v-if="quizShow" type="button" class="w-100 btn border border-success text-success btn-sm my-1"><i class="bi bi-eye-slash-fill"></i> &nbsp; Hide </button>
+                    <button v-else type="button" class="w-100 btn btn-success btn-sm my-1"><i class="bi bi-eye-fill"></i> &nbsp; Publish </button>
+                </div>
+                
             </div>
         </div>
         </div>
@@ -108,15 +123,15 @@ export default {
                     <textarea class="form-control" id="instructions" v-model="quizFormData.instructions" placeholder="Instructions" style="height: 150px"></textarea>
                     <label for="instructions">Instructions</label>
                 </div> 
-                <div class="row gx-2">            
+                <div class="row gx-2">
+                    <div class="col form-floating">
+                        <input type="datetime-local" class="form-control" id="schedule"  v-model="quizFormData.scheduled_on" placeholder="Schedule On" required>
+                        <label for="schedule">Schedule On</label>
+                    </div>            
                     <div class="col form-floating">
                         <input type="text" class="form-control" id="timeLimit" v-model="quizFormData.time_limit_hhmm" placeholder="Time Limit (hh:mm)" required>
                         <label for="timeLimit">Time Limit (hh:mm)</label>
-                    </div>
-                    <div class="col form-floating">
-                        <input type="datetime-local" class="form-control" id="deadline"  v-model="quizFormData.deadline" placeholder="Deadline (optional)" required>
-                        <label for="deadline">Deadline (optional)</label>
-                    </div>
+                    </div>                    
                 </div>
             </div>
             <div class="modal-footer justify-content-between">
@@ -198,7 +213,8 @@ export default {
             timeLimitFormat: '',
             quizShow: '',
             createdOn: '',
-            deadline: '',
+            scheduledOn: '',
+            scheduledOnFormatted: '',
             numberOfQuestions: '',
             subjectId: '',
             subjectName: '',
@@ -210,7 +226,7 @@ export default {
                 name: '',
                 instructions: '',
                 time_limit_hhmm: '',
-                deadline: null,
+                scheduled_on: '',
                 chapter_id: null
             },
             editQuizerror: '',
@@ -227,6 +243,7 @@ export default {
             },
             
             addQuestionerror: '',
+            nShow: false
         }
     },
     components: {
@@ -259,14 +276,16 @@ export default {
 
             if (res.ok) {
                 const data = await res.json();
+                console.log(data);
                 this.quizName = data.name;
                 this.quizInstructions = data.instructions;
                 this.timeLimit = data.time_limit;
                 this.timeLimitHhmm = data.time_limit_hhmm;
                 this.timeLimitFormat = data.time_limit_formatted;
                 this.quizShow = data.show;
-                this.createdOn = data.created_on;
-                this.deadline = data.deadline;
+                this.createdOn = data.created_on_formatted;
+                this.scheduledOn = data.scheduled_on;
+                this.scheduledOnFormatted = data.scheduled_on_formatted;
                 this.numberOfQuestions = data.number_of_questions;
                 this.subjectId = data.subject_id;
                 this.subjectName = data.subject_name;
@@ -276,8 +295,7 @@ export default {
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 } else if (res.status === 404) {
                     this.$router.push("/");
                 }
@@ -303,8 +321,7 @@ export default {
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 }
                 const errorData = await res.json();
                 console.error(errorData);
@@ -315,7 +332,7 @@ export default {
             this.quizFormData.name = this.quizName;
             this.quizFormData.instructions = this.quizInstructions;
             this.quizFormData.time_limit_hhmm = this.timeLimitHhmm;
-            this.quizFormData.deadline = this.deadline;
+            this.quizFormData.scheduled_on = this.scheduledOn;
             this.quizFormData.chapter_id = this.chapterId;
         },
 
@@ -344,8 +361,7 @@ export default {
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 }                
                 const errorData = await res.json();
                 console.error(errorData);
@@ -382,8 +398,7 @@ export default {
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 }                
                 const errorData = await res.json();
                 console.error(errorData);
@@ -407,7 +422,26 @@ export default {
         addOption() {
             this.questionFormData.no_options += 1;
             this.questionFormData.options.push({name: '', is_correct: false});
-        }
+        },
+
+        async toggleShow() {
+            const origin = window.location.origin;
+            const url = `${origin}/api/quiz/${this.quizId}/toggle-show`;
+            const res = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authentication-Token": localStorage.getItem("token")
+                },
+                credentials: "same-origin",
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                console.log(data);
+                this.quizShow = data.show;
+            }
+        },
 
     },
     mounted() {

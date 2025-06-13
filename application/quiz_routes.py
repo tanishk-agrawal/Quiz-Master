@@ -3,7 +3,7 @@ from flask_security import auth_required, roles_required, roles_accepted, curren
 from .models import *
 
 from .func import *
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def create_routes(app):
 
@@ -15,10 +15,10 @@ def create_routes(app):
         name = data.get('name')
         instructions = data.get('instructions')
         time_limit_hhmm = data.get('time_limit_hhmm')
-        deadline = data.get('deadline')
+        scheduled_on = data.get('scheduled_on')
         chapter_id = data.get('chapter_id')
 
-        if not name or not time_limit_hhmm or not chapter_id:
+        if not name or not time_limit_hhmm or not chapter_id or not scheduled_on:
             return jsonify({"message" : "invalid input"}), 400
         
         time_limit = hhmm_to_minutes(time_limit_hhmm)
@@ -30,11 +30,9 @@ def create_routes(app):
             return jsonify({"message" : "chapter not found"}), 404
         
         try:    
-            new_quiz = Quiz(name = name, instructions = instructions, time_limit = time_limit, chapter_id = chapter_id, show = False, created_on = datetime.now().replace(microsecond=0))
+            new_quiz = Quiz(name = name, instructions = instructions, time_limit = time_limit, chapter_id = chapter_id,
+                            scheduled_on = datetime.fromisoformat(scheduled_on),  created_on = datetime.now().replace(microsecond=0))
             db.session.add(new_quiz)
-            if deadline:
-                dline = datetime.fromisoformat(deadline) #iso format to datetime object
-                new_quiz.deadline = dline
             db.session.commit() 
             print('quiz created '+ str(new_quiz.id))
         except:
@@ -57,33 +55,38 @@ def create_routes(app):
         name = data.get('name')
         instructions = data.get('instructions')
         time_limit_hhmm = data.get('time_limit_hhmm')
-        deadline = data.get('deadline')
-        chapter_id = data.get('chapter_id')
+        scheduled_on = data.get('scheduled_on')
 
-        if not name or not time_limit_hhmm or not chapter_id:
+        print(data)
+        if not name or not time_limit_hhmm or not scheduled_on:
             return jsonify({"message" : "invalid input"}), 400
         
         time_limit = hhmm_to_minutes(time_limit_hhmm)
         if time_limit <= 0:
             return jsonify({"message" : "invalid time limit format"}), 400
                   
-        chapter = Chapter.query.get(chapter_id)
-        if not chapter:
-            return jsonify({"message" : "chapter not found"}), 404
-        
+                
         quiz.name = name
         quiz.instructions = instructions
         quiz.time_limit = time_limit
-        quiz.chapter_id = chapter_id
-        if deadline:
-            dline = datetime.fromisoformat(deadline)
-            quiz.deadline = dline
-        else:
-            quiz.deadline = None
+        quiz.scheduled_on = datetime.fromisoformat(scheduled_on)        
 
         db.session.commit() 
         return jsonify({'message' : 'quiz updated successfully'}), 200
     
+    @app.route('/api/quiz/<int:id>/toggle-show', methods=['GET'])
+    @auth_required('token')
+    @roles_required('admin')
+    def toggle_show(id):
+        quiz = Quiz.query.get(id)
+        if not quiz:
+            return jsonify({"message" : "quiz not found"}), 404
+
+        show = False if len(quiz.questions) == 0 else not quiz.show #False if there are no questions else toggle
+        quiz.show = show
+        db.session.commit() 
+        print('show :', quiz.show)
+        return jsonify({'message' : 'quiz updated successfully', 'show' : quiz.show}), 200
     
 
     @app.route('/api/question', methods=['POST'])
@@ -132,8 +135,6 @@ def create_routes(app):
                 db.session.commit()
                 print('option created '+ str(new_option.id))
 
-            quiz.show = True
-            db.session.commit()
         except Exception as e:
             print('error while creating', e)
             db.session.rollback()
@@ -213,39 +214,85 @@ def create_routes(app):
         return jsonify({'message' : 'question deleted successfully'}), 200
     
 
-    @app.route('/api/quiz/recent', methods=['GET'])
+    @app.route('/api/quiz/get', methods=['GET'])
     @auth_required('token')
-    def get_recent_quiz():
+    def get_quiz():
         n = request.args.get('n', -1, type=int)
         if n >= 0:
-            quizzes = Quiz.query.filter(Quiz.show == True).order_by(Quiz.created_on.desc()).limit(n).all()
+            quizzes = Quiz.query.filter(Quiz.show == True).order_by(Quiz.scheduled_on).limit(n).all()
         else:
-            quizzes = Quiz.query.filter(Quiz.show == True).order_by(Quiz.created_on.desc()).all()
+            quizzes = Quiz.query.filter(Quiz.show == True).order_by(Quiz.scheduled_on).all()
 
         if not quizzes:
-            return jsonify({'message': 'no quizes found'}), 404
-        quiz_list = []
+            return jsonify({'message': 'no quizes found'}), 404      
+        
+        upcoming, past = [], []
         for quiz in quizzes:
-            quiz_list.append({'id': quiz.id, 'name': quiz.name, 'instructions': quiz.instructions, 
-                              'time_limit_hhmm': minutes_to_hhmm(quiz.time_limit), 'time_limit_formatted': minutes_to_formatted(quiz.time_limit),
-                              'created_on': str(quiz.created_on), 'created_on_formatted': datetime_to_string(quiz.created_on), 'deadline_formatted': datetime_to_string(quiz.deadline), 'deadline': str(quiz.deadline), 
-                              'number_of_questions': len(quiz.questions), 
-                              'chapter' : {'id': quiz.chapter_id, 'name': quiz.chapter.name}, 
-                              'subject': {'id': quiz.chapter.subject_id,  'name': quiz.chapter.subject.name}})
-        return jsonify(quiz_list), 200
+            attempt = Attempt.query.filter(Attempt.user_id == current_user.id).filter(Attempt.quiz_id == quiz.id).first()
+            result = {'attempted' : False}
+            if attempt:
+                percent = (attempt.marks_scored / attempt.max_marks) * 100
+                result = {'attempted' : True, 'marks_scored': attempt.marks_scored, 'max_marks': attempt.max_marks, 'percentage': round(percent,1)}
+            
+            temp = {'id': quiz.id, 'name': quiz.name, 'instructions': quiz.instructions, 
+                    'time_limit': quiz.time_limit, 'time_limit_hhmm': minutes_to_hhmm(quiz.time_limit), 'time_limit_formatted': minutes_to_formatted(quiz.time_limit),
+                    'created_on': str(quiz.created_on), 'created_on_formatted': datetime_to_string(quiz.created_on), 
+                    'scheduled_on_formatted': datetime_to_string(quiz.scheduled_on), 'scheduled_on': str(quiz.scheduled_on), 
+                    'number_of_questions': len(quiz.questions), 'result': result,
+                    'chapter' : {'id': quiz.chapter_id, 'name': quiz.chapter.name}, 
+                    'subject': {'id': quiz.chapter.subject_id,  'name': quiz.chapter.subject.name}}
+            if (quiz.scheduled_on + timedelta(minutes = quiz.time_limit)) < datetime.now():
+                past.append(temp)
+            else:
+                upcoming.append(temp)
+        return jsonify({'upcoming': upcoming, 'past': past}), 200
     
+    @app.route('/api/chapter/<int:id>/quiz/user', methods=['GET'])
+    @auth_required('token')
+    def get_chapter_quiz(id):
+        chapter = Chapter.query.get(id)
+        if not chapter:
+            return {'message': 'chapter not found'}, 404
+        quizzes = []
+        for quiz in chapter.quizzes:
+            quizzes.append(quiz) if quiz.show else None
+
+        if not quizzes:
+            return jsonify({'message': 'no quizes found'}), 404      
+        
+        upcoming, past = [], []
+        for quiz in quizzes:
+            attempt = Attempt.query.filter(Attempt.user_id == current_user.id).filter(Attempt.quiz_id == quiz.id).first()
+            result = {'attempted' : False}
+            if attempt:
+                percent = (attempt.marks_scored / attempt.max_marks) * 100
+                result = {'attempted' : True, 'marks_scored': attempt.marks_scored, 'max_marks': attempt.max_marks, 'percentage': round(percent,1)}
+            
+            temp = {'id': quiz.id, 'name': quiz.name, 'instructions': quiz.instructions, 
+                    'time_limit': quiz.time_limit, 'time_limit_hhmm': minutes_to_hhmm(quiz.time_limit), 'time_limit_formatted': minutes_to_formatted(quiz.time_limit),
+                    'created_on': str(quiz.created_on), 'created_on_formatted': datetime_to_string(quiz.created_on), 
+                    'scheduled_on_formatted': datetime_to_string(quiz.scheduled_on), 'scheduled_on': str(quiz.scheduled_on), 
+                    'number_of_questions': len(quiz.questions), 'result': result,
+                    'chapter' : {'id': quiz.chapter_id, 'name': quiz.chapter.name}, 
+                    'subject': {'id': quiz.chapter.subject_id,  'name': quiz.chapter.subject.name}}
+            if (quiz.scheduled_on + timedelta(minutes = quiz.time_limit)) < datetime.now():
+                past.append(temp)
+            else:
+                upcoming.append(temp)
+        return jsonify({'quizzes': upcoming + past}), 200
 
     @app.route('/api/quiz/<int:id>/user', methods=['GET'])
     @auth_required('token')
-    def get_quiz(id):
+    def get_user_quiz(id):
         quiz = Quiz.query.get(id)
         if not quiz or not quiz.show:
             return jsonify({'message': 'quiz not found'}), 404
         quiz_attempt = Attempt.query.filter(Attempt.user_id == current_user.id).filter(Attempt.quiz_id == id).first()
         attempted = False if not quiz_attempt else True
-        return {'id': quiz.id, 'name': quiz.name, 'instructions': quiz.instructions, 
+        return {'id': quiz.id, 'name': quiz.name, 'instructions': quiz.instructions, 'time_limit': quiz.time_limit,
                               'time_limit_hhmm': minutes_to_hhmm(quiz.time_limit), 'time_limit_formatted': minutes_to_formatted(quiz.time_limit),
-                              'created_on': str(quiz.created_on), 'created_on_formatted': datetime_to_string(quiz.created_on), 'deadline_formatted': datetime_to_string(quiz.deadline), 'deadline': str(quiz.deadline), 
+                              'created_on': str(quiz.created_on), 'created_on_formatted': datetime_to_string(quiz.created_on), 
+                              'scheduled_on_formatted': datetime_to_string(quiz.scheduled_on), 'scheduled_on': str(quiz.scheduled_on), 
                               'number_of_questions': len(quiz.questions), 'total_marks' : sum(question.marks for question in quiz.questions),
                               'chapter' : {'id': quiz.chapter_id, 'name': quiz.chapter.name}, 
                               'subject': {'id': quiz.chapter.subject_id,  'name': quiz.chapter.subject.name}, 'attempted': attempted}, 200
@@ -257,6 +304,12 @@ def create_routes(app):
         if not quiz or not quiz.show:
             return jsonify({'message': 'quiz not found'}), 404
         
+        if quiz.scheduled_on > datetime.now():
+            return jsonify({'message': 'quiz not started yet'}), 404
+        
+        if not (quiz.scheduled_on <= datetime.now() <= (quiz.scheduled_on + timedelta(minutes = quiz.time_limit))):
+            return jsonify({'message': 'quiz can be attempted only in scheduled time'}), 404
+        
         quiz_attempt = Attempt.query.filter(Attempt.user_id == current_user.id).filter(Attempt.quiz_id == id).first()
         attempted = False if not quiz_attempt else True
 
@@ -264,15 +317,15 @@ def create_routes(app):
         for question in quiz.questions:
             options = []
             for option in question.options:
-                options.append({'id': option.id, 'name': option.name, 'is_correct': option.is_correct})
+                options.append({'id': option.id, 'name': option.name})
                 
             questions.append({'id': question.id, 'statement': question.statement, 'hint': question.hint, 'marks': question.marks, 
-                              'options': options,  'remark': question.remark})
+                              'options': options})
 
         return {'id': quiz.id, 'name': quiz.name, 'instructions': quiz.instructions, 'time_limit': quiz.time_limit,
                               'time_limit_hhmm': minutes_to_hhmm(quiz.time_limit), 'time_limit_formatted': minutes_to_formatted(quiz.time_limit),
                               'created_on': str(quiz.created_on), 'created_on_formatted': datetime_to_string(quiz.created_on), 
-                              'deadline_formatted': datetime_to_string(quiz.deadline), 'deadline': str(quiz.deadline), 
+                              'scheduled_on_formatted': datetime_to_string(quiz.scheduled_on), 'scheduled_on': str(quiz.scheduled_on),  
                               'number_of_questions': len(quiz.questions), 'total_marks' : sum(question.marks for question in quiz.questions),
                               'questions': questions,   
                               'chapter' : {'id': quiz.chapter_id, 'name': quiz.chapter.name}, 
@@ -293,6 +346,9 @@ def create_routes(app):
         if not started_at or not submissions:
             return jsonify({'message': 'started_at and submissions are required'}), 400
         
+        if not (quiz.scheduled_on <= datetime.strptime(started_at, "%d/%m/%Y, %H:%M:%S") <= (quiz.scheduled_on + timedelta(minutes = quiz.time_limit))):
+            return jsonify({'message': 'quiz can be attempted only in scheduled time'}), 400
+
         for question_id, option_id in submissions.items():
             question_id = int(question_id)
 
@@ -304,7 +360,7 @@ def create_routes(app):
                 return jsonify({'message': 'option not found'}), 400
 
         max_marks = sum(question.marks for question in quiz.questions)
-        attempt = Attempt(quiz_id = quiz.id, user_id = current_user.id, started_at = datetime.fromisoformat(started_at), submitted_at = datetime.now().replace(microsecond=0), max_marks = max_marks)
+        attempt = Attempt(quiz_id = quiz.id, user_id = current_user.id, started_at = datetime.strptime(started_at, "%d/%m/%Y, %H:%M:%S"), submitted_at = datetime.now().replace(microsecond=0), max_marks = max_marks)
         db.session.add(attempt)
         db.session.commit() 
 

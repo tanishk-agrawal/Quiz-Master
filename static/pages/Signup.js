@@ -6,7 +6,7 @@ export default {
             <div class="fst-italic text-center mb-2">
                 <h2 class="m-0">Signup</h2>
                 <p>Create your account</p>
-                <div v-if="error" id="error" class="alert alert-danger alert-dismissible fade show text-capitalize text-start p-1 mt-0" role="alert" >
+                <div v-if="error" id="error" class="alert alert-danger alert-dismissible fade show text-capitalize text-start py-1 px-2 mt-0" role="alert" >
                     {{ error }} <button type="button" class="btn-close p-2"  @click="error = ''"></button>
                 </div>
             </div>

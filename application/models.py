@@ -46,9 +46,9 @@ class Quiz(db.Model):
     name = db.Column(db.String(255), nullable=False)
     instructions = db.Column(db.String())
     time_limit = db.Column(db.Integer(), nullable=False) # in minutes
-    show = db.Column(db.Boolean(), nullable=False, default=False)
     created_on = db.Column(db.DateTime(), nullable=False)
-    deadline = db.Column(db.DateTime()) # optional
+    scheduled_on = db.Column(db.DateTime())
+    show = db.Column(db.Boolean(), default=False)
     
     chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'), nullable=False)
     questions = db.relationship('Question', backref='quiz', cascade="all, delete-orphan")

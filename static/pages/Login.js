@@ -1,13 +1,14 @@
 export default {
     template: `
+    <div>
     <div class="row">
         <div class="col d-flex justify-content-center align-items-center" style="height: 90vh">
             <div class="card shadow-lg p-4 rounded-5" style="width: 450px;">
             <div class="fst-italic text-center mb-2">
                 <h2 class="m-0">Welcome Back</h2>
                 <p>Enter your credentials to login</p>            
-                <div v-if="error" id="error" class="alert alert-danger alert-dismissible fade show text-capitalize text-start p-1 mt-0" role="alert" >
-                    {{ error }} <button type="button" class="btn-close p-2"  @click="error = ''"></button>
+                <div v-if="error" id="error" class="alert alert-danger alert-dismissible fade show text-capitalize text-start py-1 px-2 mt-0" role="alert" >
+                    <small class="bi bi-exclamation-diamond-fill font-monospace"> {{ error }} </small><button type="button" class="btn-close p-2"  @click="error = ''"></button>
                 </div>
             </div>
                 <div class="form-floating mb-2">
@@ -22,6 +23,7 @@ export default {
                 <p class="text-center mt-3">Don't have an account? <router-link to="/signup">Signup</router-link></p>
             </div>
         </div>
+    </div>
     </div>`,
     data: function() {
         return {
@@ -29,7 +31,7 @@ export default {
                 email: "",
                 password: ""
             },
-            error: ""
+            error: "",
         }
     },
     methods: {
@@ -80,5 +82,10 @@ export default {
             const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
             return re.test(email);
         },
+    },
+    mounted() {
+        if (this.$route.params.error) {
+            this.error = this.$route.params.error;
+        }
     }
 }

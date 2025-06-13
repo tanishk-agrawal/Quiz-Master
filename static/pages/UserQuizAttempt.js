@@ -12,7 +12,7 @@ export default{
                     <div  class="dropdown-menu p-0"><UserQuizInfo :quiz="quiz"></UserQuizInfo></div>
                 </div>
                 <div class="col-auto">
-                    <UserQuizTimer v-if="quiz && quiz.time_limit" :totalTime="timelimit" @time-up="timeUp"></UserQuizTimer>
+                    <UserQuizTimer v-if="quiz && quiz.time_limit" :totalTime="timeRemaining" @time-up="timeUp"></UserQuizTimer>
                 </div>
                 <div class="col my-auto text-end"><button class="btn btn-success fw-medium w-50" @click="submit">
                 <span v-if="submitLoading" class="spinner-border spinner-border-sm text-light" role="status"></span> <span v-else>Submit</span>
@@ -56,6 +56,15 @@ export default{
             }
         }
     },
+    computed:{
+        timeRemaining(){
+            const scheduled_on = new Date(this.quiz.scheduled_on);
+            const ends_on = new Date(scheduled_on.getTime() + (this.quiz.time_limit * 60 * 1000));
+            const now = new Date();
+            console.log('time', scheduled_on, now, ends_on);
+            return Math.floor((ends_on - now) / 1000);
+        }
+    },
     components: {
         UserQuizInfo,
         UserQuizTimer
@@ -77,13 +86,11 @@ export default{
                 const data = await res.json();
                 this.quiz = data;
                 if (this.checkAttempted()) return;
-                this.checkAttempting();
                 this.populateAttemptFormData();
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 } else if (res.status === 404) {
                     this.$router.push("/404");
                 }
@@ -100,16 +107,7 @@ export default{
                 }
         },
 
-        checkAttempting(){
-            if(localStorage.getItem("attempting")){ 
-                this.timelimit = localStorage.getItem("timelimit");
-            }
-            else {
-                localStorage.setItem("attempting", this.$route.params.id);
-                localStorage.setItem("timelimit", this.quiz.time_limit*60);
-                this.timelimit = localStorage.getItem("timelimit");
-            }
-        },
+        
         timeUp(){
             alert("Time's Up ⏰");
             this.submit();
@@ -144,8 +142,7 @@ export default{
             } else {
                 if (res.status === 401) {
                     localStorage.clear();
-                    alert("Session Expired : Please Login Again");
-                    this.$router.push("/");
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
                 } 
                 const errorData = await res.json();
                 console.error(errorData);
@@ -154,7 +151,7 @@ export default{
         },
 
         populateAttemptFormData(){
-            this.attemptFormData.started_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
+            this.attemptFormData.started_at = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: false });
             for (let question of this.quiz.questions) {
                 this.attemptFormData.submissions[question.id] = null;                
             }            
