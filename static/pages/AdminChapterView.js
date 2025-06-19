@@ -18,18 +18,22 @@ export default {
             </div>
         </div>
         </div>
-
+        <hr>
         <div class="row">
             <div class="col">
                 <h4 class="fw-bold">Quizzes ({{quizzes.length}})</h4>
+            </div>
+            <div class="col my-auto d-flex justify-content-end">
+            <input type="text" id="search" placeholder=" 🔍︎ Search" v-model="searchString" class="border-2 form-control form-control-sm" style="max-width:350px">
             </div>
             <div class="col my-auto text-end fw-bold">
                 <a href="#" class="link-success link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" data-bs-toggle="modal" data-bs-target="#addQuizModal" @click="resetQuizModal"><i class="bi bi-plus-circle"></i> Create  Quiz</a>
             </div>
         </div>
-        <div v-if="quizzes.length == 0" class="text-center alert alert-warning fw-bold m-4">No Quizzes Found</div>
+        <hr>
+        <div v-if="filteredQuizzes.length == 0" class="text-center alert alert-warning fw-bold m-4">No Quizzes Found</div>
         <div v-else class="d-flex flex-wrap">
-            <div v-for="quiz in quizzes">
+            <div v-for="quiz in filteredQuizzes">
                 <AdminQuizCard :quiz="quiz" :subjectId="subjectId" :subjectName="subjectName" :chapterId="chapterId" :chapterName="chapterName" @change="fetchChapterQuizzes"></AdminQuizCard>
             </div>
         </div>
@@ -149,13 +153,11 @@ export default {
                 subject_id: this.subjectId
             },
             editChaptererror: '',
-            quizInstructions: `⚠️ Important Rules
+            quizInstructions: `Important Rules :
 -One Attempt Only: You can take the quiz only once.
 -No Backtracking: Once submitted, answers cannot be changed.
 -No External Help: Do not use notes, websites, or other people to assist you.
 -Auto-Submit: The quiz will be submitted automatically when the timer ends.
-
-✅ Tips for Success
 -Read each question carefully.
 -Manage your time — don’t spend too long on any one question.
 -Check your answers if time permits.
@@ -169,11 +171,28 @@ Good luck!`,
                 chapter_id: this.chapterId
             },
             addQuizerror: '',
+
+            searchString:""
         }
     },
 
     components: {
         AdminQuizCard
+    },
+
+    computed: {
+        filteredQuizzes() {
+            if(!this.searchString) {
+                return this.quizzes;
+            }
+            const q = this.searchString.trim().toLowerCase();
+
+            return this.quizzes.filter(item => {
+                return (
+                    item.name?.toLowerCase().includes(q) 
+                );
+            });
+        },
     },
 
     methods:{

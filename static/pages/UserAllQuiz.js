@@ -8,20 +8,20 @@ export default{
             <h3 class="fw-bold">Quizzes</h3>
             </div>
             <div class="col my-auto d-flex justify-content-end">
-            <input type="text" id="search" placeholder=" 🔍︎ Search" class="border-2 form-control" style="max-width:350px">
+            <input type="text" id="search" placeholder=" 🔍︎ Search Quiz, Subject or Chapter" v-model="searchString" class="border-2 form-control" style="max-width:350px">
             </div>
         </div>
         <hr>
-        <div class="row" v-if='quizzes.upcoming.length == 0 && quizzes.past.length == 0' class="text-center alert alert-warning fw-bold m-4">No Quizzes Found</div>
-        <div class="row gx-1" v-if='quizzes.upcoming.length > 0'>
+        <div class="row" v-if='filteredUpcomingQuizzes.length == 0 && filteredPastQuizzes.length == 0' class="text-center alert alert-warning fw-bold m-4">No Quizzes Found</div>
+        <div class="row gx-1" v-if='filteredUpcomingQuizzes.length > 0'>
             <h4>Live & Upcoming</h4>
-            <div class="col-auto" v-for="quiz in quizzes.upcoming">
+            <div class="col-auto" v-for="quiz in filteredUpcomingQuizzes">
                 <UserQuizCard :quiz="quiz" :showHeader="true"></UserQuizCard>
             </div>
         </div>
-        <div class="row gx-1" v-if='quizzes.past.length > 0'>
+        <div class="row gx-1" v-if='filteredPastQuizzes.length > 0'>
             <h4>Past</h4>
-            <div class="col-auto" v-for="quiz in quizzes.past">
+            <div class="col-auto" v-for="quiz in filteredPastQuizzes">
                 <UserQuizCard :quiz="quiz" :showHeader="true"></UserQuizCard>
             </div>
         </div>
@@ -35,8 +35,40 @@ export default{
             quizzes: {
                 upcoming: [],
                 past: []
-            }
+            },
+
+            searchString:""
         }
+    },
+    computed: {
+        filteredUpcomingQuizzes() {
+            if(!this.searchString) {
+                return this.quizzes.upcoming;
+            }
+            const q = this.searchString.trim().toLowerCase();
+
+            return this.quizzes.upcoming.filter(item => {
+                return (
+                    item.name?.toLowerCase().includes(q) ||
+                    item.subject.name?.toLowerCase().includes(q) ||
+                    item.chapter.name?.toLowerCase().includes(q)
+                );
+            });
+        },
+        filteredPastQuizzes() {
+            if(!this.searchString) {
+                return this.quizzes.past;
+            }
+            const q = this.searchString.trim().toLowerCase();
+            
+            return this.quizzes.past.filter(item => {
+                return (
+                    item.name?.toLowerCase().includes(q) ||
+                    item.subject.name?.toLowerCase().includes(q) ||
+                    item.chapter.name?.toLowerCase().includes(q)
+                );
+            });
+        },
     },
 
     methods: {

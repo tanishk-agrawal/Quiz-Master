@@ -1,20 +1,23 @@
 export default {
     template: `
     <div>
-    <div class="card shadow-sm m-2" :class="{'border-danger border-2': !quiz.show}" style="width: 16rem;">
-        <div class="card-body">
+    <div class="card shadow-sm m-2" :class="{'border-danger border-2': !quiz.show}" style="min-width: 16rem;">
+        <div class="card-body pb-1">
         <router-link :to="'/admin/quiz/' + quiz.id" class="link-dark link-underline-opacity-0">
-            <h5 class="card-title">{{quiz.name}}</h5>
-        </router-link>   
-        <p class="card-text">
-        <small class="text-dark">
-            <ul style="list-style-type:none; margin:0; padding:0">
-                <li>Questions : <span :class="{'text-danger fw-bold': quiz.number_of_questions == 0}">{{quiz.number_of_questions}}</span></li>
-                <li>Created on : {{formattedDate}}</li>
-            </ul>
-        </small>
-        </p>
-
+            <h5 class="card-title fw-bold text-warning-emphasis">{{quiz.name}}</h5>
+           
+            <div class="card-text">
+            <small class="fw-bold">
+                <div class="d-flex justify-content-between my-2">
+                    <span :class="quiz.number_of_questions <= 0 ? 'text-danger' : ''">{{quiz.number_of_questions}} MCQs</span>
+                    <span class="text-end"><i class="bi bi-clock-history"></i> {{quiz.time_limit_formatted}} </span>
+                </div>
+                <div class="text-muted">
+                    <div><i class="bi bi-calendar-week"></i>&nbsp;<span> {{quiz.scheduled_on_formatted}} </span></div>
+                </div>
+            </small>
+            </div>
+        </router-link>
         </div>
         <div class="card-footer fw-bold d-flex justify-content-between">
             <router-link :to="'/admin/quiz/' + quiz.id" class="link-body-emphasis link-offset-2 link-underline-opacity-0 link-underline-opacity-100-hover"><i class="bi bi-box-arrow-up-right"></i> View </router-link>

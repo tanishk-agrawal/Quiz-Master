@@ -18,13 +18,19 @@ export default {
             <div class="col">
             <h4 class="fw-bold">Subjects ({{subjects.length}})</h4>
             </div>
+
+            <div class="col my-auto d-flex justify-content-end">
+            <input type="text" id="search" placeholder=" 🔍︎ Search" v-model="searchString" class="border-2 form-control form-control-sm" style="max-width:350px">
+            </div>
+
             <div class="col my-auto text-end fw-bold">
             <a href="#" class="link-success link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" data-bs-toggle="modal" data-bs-target="#addSubjectModal"><i class="bi bi-plus-circle"></i> Add  Subject</a>
             </div>
         </div>
-        <div v-if="subjects.length == 0" class="text-center alert alert-warning fw-bold m-4">No Subjects Found</div>
+        <hr>
+        <div v-if="filteredSubjects.length == 0" class="text-center alert alert-warning fw-bold m-4">No Subjects Found</div>
         <div v-else class="d-flex flex-wrap">
-            <div v-for="subject in subjects">
+            <div v-for="subject in filteredSubjects">
                 <SubjectCard :name="subject.name" :description="subject.description" :id="subject.id" @change="fetchSubjects"></SubjectCard>
             </div>
         </div>
@@ -64,7 +70,9 @@ export default {
                 name: "",
                 description: ""
             },
-            addSubjecterror : ""
+            addSubjecterror : "",
+
+            searchString:""
         }
     },
     components: {
@@ -72,6 +80,22 @@ export default {
         ProfileCard,
         DateTimeCard
     },
+     
+    computed: {
+        filteredSubjects() {
+            if(!this.searchString) {
+                return this.subjects;
+            }
+            const q = this.searchString.trim().toLowerCase();
+
+            return this.subjects.filter(item => {
+                return (
+                    item.name?.toLowerCase().includes(q) 
+                );
+            });
+        },
+    },
+
     methods: {
         async fetchSubjects() {
             const origin = window.location.origin;

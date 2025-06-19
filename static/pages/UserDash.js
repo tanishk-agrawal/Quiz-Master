@@ -24,9 +24,9 @@ export default {
             </div>
         </div>
         
-        <div class="row" v-if='quizzes.length == 0' class="text-center alert alert-warning fw-bold m-4">No Live or Upcoming Quizzes Found</div>
-        <div class="row gx-1" v-else>
-            <div class="col-auto" v-for="quiz in quizzes">
+        <div class="row" v-if='quizzes.length === 0' class="text-center alert alert-warning fw-bold m-4">No Live or Upcoming Quizzes Found</div>
+        <div class="row gx-0" v-else>
+            <div class="col-auto"  v-for="quiz in quizzes.slice(0, 5)">
                 <UserQuizCard :quiz="quiz" :showHeader="true"></UserQuizCard>
             </div>
         </div>

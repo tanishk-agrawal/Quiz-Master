@@ -217,11 +217,8 @@ def create_routes(app):
     @app.route('/api/quiz/get', methods=['GET'])
     @auth_required('token')
     def get_quiz():
-        n = request.args.get('n', -1, type=int)
-        if n >= 0:
-            quizzes = Quiz.query.filter(Quiz.show == True).order_by(Quiz.scheduled_on).limit(n).all()
-        else:
-            quizzes = Quiz.query.filter(Quiz.show == True).order_by(Quiz.scheduled_on).all()
+        
+        quizzes = Quiz.query.filter(Quiz.show == True).order_by(Quiz.scheduled_on).all()
 
         if not quizzes:
             return jsonify({'message': 'no quizes found'}), 404      

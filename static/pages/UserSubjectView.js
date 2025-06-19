@@ -23,7 +23,7 @@ export default{
         <hr>
 
         <div v-for="chapter in subject.chapters">
-            <div class="card shadow-sm m-2 my-4" :id="'chapter' + chapter.id">
+            <div class="card shadow-sm m-4" :id="'chapter' + chapter.id">
             <div class="card-body ">
                 <button class="btn px-5 w-100" type="button" @click="toggleAndFetch(chapter.id)" data-bs-toggle="collapse" :href="'#chQuiz' + chapter.id">
                 <div class="row text-start">

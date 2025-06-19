@@ -17,18 +17,24 @@ export default {
         </div>
     </div>
     </div>
-
+    <hr>
     <div class="row">
         <div class="col">
         <h4 class="fw-bold">Chapters ({{chapters.length}})</h4>
         </div>
+
+        <div class="col my-auto d-flex justify-content-end">
+            <input type="text" id="search" placeholder=" 🔍︎ Search" v-model="searchString" class="border-2 form-control form-control-sm" style="max-width:350px">
+        </div>
+
         <div class="col my-auto text-end fw-bold">
         <a href="#" class="link-success link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" data-bs-toggle="modal" data-bs-target="#addChapterModal"><i class="bi bi-plus-circle"></i> Add  Chapter</a>
         </div>
     </div>
-    <div v-if="chapters.length == 0" class="text-center alert alert-warning fw-bold m-4">No Chapters Found</div>
+    <hr>
+    <div v-if="filteredChapters.length == 0" class="text-center alert alert-warning fw-bold m-4">No Chapters Found</div>
     <div v-else class="d-flex flex-wrap">
-        <div v-for="chapter in chapters">
+        <div v-for="chapter in filteredChapters">
             <ChapterCard :name="chapter.name" :description="chapter.description" :id="chapter.id" :subjectId="subjectId" :subjectName="subjectName" @change="fetchSubjectChapters"></ChapterCard>
         </div>
     </div>
@@ -129,11 +135,28 @@ export default {
                 name: this.subjectName,
                 description: this.subjectDescription
             },
-            editSubjecterror: ''
+            editSubjecterror: '',
+
+            searchString:""
         }
     },
     components: {
         ChapterCard
+    },
+
+    computed: {
+        filteredChapters() {
+            if(!this.searchString) {
+                return this.chapters;
+            }
+            const q = this.searchString.trim().toLowerCase();
+
+            return this.chapters.filter(item => {
+                return (
+                    item.name?.toLowerCase().includes(q) 
+                );
+            });
+        },
     },
     methods: {
         async fetchSubjectChapters() {
