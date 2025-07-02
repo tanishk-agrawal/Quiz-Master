@@ -9,7 +9,7 @@ export default {
                 <router-link :to="'/admin/subject/' + subjectId" class=""><span class="badge text-bg-warning bg-opacity-100 mx-1">{{subjectName}}</span></router-link>
                 
                 <h3 class="my-2">{{chapterName}} </h3>
-                <p class="my-2">{{chapterDescription}}</p>
+                <p class="my-2 overflow-y-auto" style="max-height: 100px">{{chapterDescription}}</p>
             </div>
             <div class="vr p-0 mx-2"></div>
             <div class="col-auto d-flex flex-column justify-content-center">
@@ -30,7 +30,6 @@ export default {
                 <a href="#" class="link-success link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" data-bs-toggle="modal" data-bs-target="#addQuizModal" @click="resetQuizModal"><i class="bi bi-plus-circle"></i> Create  Quiz</a>
             </div>
         </div>
-        <hr>
         <div v-if="filteredQuizzes.length == 0" class="text-center alert alert-warning fw-bold m-4">No Quizzes Found</div>
         <div v-else class="d-flex flex-wrap">
             <div v-for="quiz in filteredQuizzes">

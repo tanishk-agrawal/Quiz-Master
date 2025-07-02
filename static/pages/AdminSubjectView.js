@@ -7,7 +7,7 @@ export default {
     <div class="row">
         <div class="col">
             <h3 class="fw-bold ">{{subjectName}}</h3>
-            <p class="">{{subjectDescription}}</p>
+            <p class="overflow-y-auto" style="max-height: 100px">{{subjectDescription}}</p>
             
         </div>
         <div class="vr p-0 mx-2"></div>
@@ -31,7 +31,6 @@ export default {
         <a href="#" class="link-success link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" data-bs-toggle="modal" data-bs-target="#addChapterModal"><i class="bi bi-plus-circle"></i> Add  Chapter</a>
         </div>
     </div>
-    <hr>
     <div v-if="filteredChapters.length == 0" class="text-center alert alert-warning fw-bold m-4">No Chapters Found</div>
     <div v-else class="d-flex flex-wrap">
         <div v-for="chapter in filteredChapters">

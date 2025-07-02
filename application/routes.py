@@ -1,10 +1,11 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, send_file
 from flask_security import auth_required, roles_required, roles_accepted, SQLAlchemyUserDatastore, current_user
-from flask_security.utils import hash_password, verify_password
-
+from flask_security.utils import hash_password, verify_password, login_user, logout_user
+from celery.result import AsyncResult
 from .models import *
+from .tasks import *
 
-def create_routes(app, user_datastore : SQLAlchemyUserDatastore):
+def create_routes(app, user_datastore):
 
     @app.route('/')
     def home():
@@ -24,6 +25,7 @@ def create_routes(app, user_datastore : SQLAlchemyUserDatastore):
             return jsonify({'message' : 'user not found'}), 404
         
         if verify_password(password, user.password):
+            login_user(user)
             return jsonify({'token' : user.get_auth_token(), 'email' : user.email, 'username' : user.username, 'role' : user.roles[0].name}), 200
         else :
             return jsonify({'message' : 'invalid password'}), 400
@@ -53,3 +55,41 @@ def create_routes(app, user_datastore : SQLAlchemyUserDatastore):
             return jsonify({'message' : 'error while creating user'}), 408
         
         return jsonify({'message' : 'user created successfully'}), 200
+    
+    @app.route('/api/logout')
+    @auth_required('token')
+    def user_logout():
+        logout_user()
+        return jsonify({'message' : 'user logged out successfully'}), 200
+    
+    @app.route('/api/export-csv') 
+    @auth_required('token')
+    @roles_required('user')
+    def export_csv():
+        result = generate_user_history_csv.delay(current_user.id) 
+        return jsonify({
+            "id": result.id,
+            "result": result.result,
+
+        })    
+    @app.route('/api/export-csv/all') 
+    @auth_required('token')
+    @roles_required('admin')
+    def export_all_csv():
+        result = generate_users_performance_csv.delay() 
+        return jsonify({
+            "id": result.id,
+            "result": result.result,
+
+        })
+    @app.route('/api/get-csv/<id>') 
+    @auth_required('session')
+    def get_csv(id):
+        result = AsyncResult(id)
+        return send_file('static/csv/' + result.result, as_attachment=True)
+    
+    @app.route('/api/is-ready/<id>') 
+    @auth_required('session')
+    def is_ready(id):
+        result = AsyncResult(id)
+        return {'ready': result.ready()}

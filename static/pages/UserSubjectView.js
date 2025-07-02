@@ -27,13 +27,16 @@ export default{
             <div class="card-body ">
                 <button class="btn px-5 w-100" type="button" @click="toggleAndFetch(chapter.id)" data-bs-toggle="collapse" :href="'#chQuiz' + chapter.id">
                 <div class="row text-start">
-                    <div class="col-2 my-auto" style="min-width: 160px">
-                    <h4 class="card-title fw-bold">{{chapter.name}}</h4>
-                    <h6 class="card-subtitle my-2 text-body-secondary">{{chapter.number_of_quizzes}} Quizzes</h6>
+                    <div class="col my-auto">
+                        <div class="row fw-bold ">
+                            <span class="fs-4">{{chapter.name}}</span>
+                            <span class="fs-6 mb-2 text-body-secondary">{{chapter.number_of_quizzes}} Quizzes</span>
+                        </div>
+                        <div class="row text-muted fs-6" style="max-height: 45px; overflow-y: hidden;">
+                            <small>{{chapter.description}}</small>
+                        </div>
                     </div>
-                    <div class="col text-muted fs-6" style="max-height: 100px; overflow-y: hidden;">
-                    <small>{{chapter.description}}</small>
-                    </div>
+                    
                     <div class="col-auto my-auto">
                     <i class="bi bi-caret-down-fill"></i>
                     </div>

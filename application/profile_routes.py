@@ -62,3 +62,65 @@ def create_routes(app, user_datastore):
         current_user.password = hash_password(new_password)
         db.session.commit()
         return jsonify({'message' : 'password changed successfully'}), 200
+    
+       
+    @app.route('/api/user-performance', methods=['GET'])
+    @auth_required('token')
+    @roles_required('admin')
+    def get_all_user_performance():
+        users = User.query.filter(User.roles.any(name='user')).all()
+        if not users:
+            return jsonify({'message' : 'no users found'}), 404
+        performance = []
+        for user in users:
+            dict = {'user_id': user.id, 'email' : user.email, 'username' : user.username, 'scores': []}
+            
+            for attempt in user.attempts:
+                dict['scores'].append((attempt.marks_scored/attempt.max_marks)*100)
+                
+            dict['no_of_quizzes'] = len(dict['scores'])
+            dict['average'] = round(sum(dict['scores'])/dict['no_of_quizzes'], 1) if dict['no_of_quizzes'] > 0 else 0
+                        
+            performance.append(dict)
+        return jsonify(performance), 200
+    
+    @app.route('/api/user-performance/<user_id>', methods=['GET'])
+    @auth_required('token')
+    def get_user_performance(user_id):
+        if current_user.roles[0].name != 'admin' or current_user.id != user_id: #user can only access their own performance / RBAC?
+            return jsonify({'message' : 'unauthorized'}), 403
+
+        user = User.query.filter(User.id == user_id).first()
+        if not user or user.roles[0].name != 'user': 
+            return jsonify({'message' : 'user not found'}), 404
+        
+        dict = {'user_id': user.id, 'email' : user.email, 'username' : user.username, 'subjects': [], 'scores': []}
+        for attempt in user.attempts:
+            dict['scores'].append(attempt.marks_scored/attempt.max_marks)
+            f1, f2 = False, False
+            for subject in dict['subjects']:
+                if subject['name'] == attempt.quiz.chapter.subject.name:
+                    f1 = True
+                    subject['scores'].append(attempt.marks_scored/attempt.max_marks)
+                    for chapter in subject['chapters']:
+                        if chapter['name'] == attempt.quiz.chapter.name:
+                            f2 = True
+                            chapter['scores'].append(attempt.marks_scored/attempt.max_marks)
+                            break
+                    if not f2:
+                        subject['chapters'].append({'name': attempt.quiz.chapter.name, 'scores': [attempt.marks_scored/attempt.max_marks]})
+                    break
+            if not f1:
+                dict['subjects'].append({'name': attempt.quiz.chapter.subject.name, 'scores': [attempt.marks_scored/attempt.max_marks], 
+                                            'chapters': [{'name': attempt.quiz.chapter.name, 'scores': [attempt.marks_scored/attempt.max_marks]}]})
+        
+        dict['no_of_quizzes'] = len(dict['scores']) 
+        dict['average'] = sum(dict['scores'])/dict['no_of_quizzes'] if dict['no_of_quizzes'] > 0 else 0
+        for subject in dict['subjects']:
+            subject['no_of_quizzes'] = len(subject['scores'])
+            subject['average'] = sum(subject['scores'])/subject['no_of_quizzes'] if subject['no_of_quizzes'] > 0 else 0
+            for chapter in subject['chapters']:
+                chapter['no_of_quizzes'] = len(chapter['scores'])
+                chapter['average'] = sum(chapter['scores'])/chapter['no_of_quizzes'] if chapter['no_of_quizzes'] > 0 else 0
+
+        return jsonify(dict), 200

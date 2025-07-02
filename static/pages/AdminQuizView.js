@@ -47,8 +47,10 @@ export default {
                 <button class="btn btn-primary btn-sm my-1" data-bs-toggle="modal" data-bs-target="#editQuizModal" @click='fillQuizForm'><i class="bi bi-pencil-square" ></i> &nbsp; Edit</button>
                 <button class="btn btn-danger btn-sm my-1" data-bs-toggle="modal" data-bs-target="#deleteQuizModal"><i class="bi bi-trash-fill"></i> &nbsp; Delete</button>
                 
-                <div v-if="!numberOfQuestions" style="width: 100px;">
+                <div v-if="!numberOfQuestions" style="width: 100px;" >
+                <span style="width: 100px;" class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Add questions to publish this quiz.">        
                     <button type="button" class="w-100 btn btn-success btn-sm my-1" disabled><i class="bi bi-eye-fill"></i> &nbsp; Publish </button>
+                </span>
                 </div>
                 <div v-else @click="toggleShow" style="width: 100px;">
                     <button v-if="quizShow" type="button" class="w-100 btn border border-success text-success btn-sm my-1"><i class="bi bi-eye-slash-fill"></i> &nbsp; Hide </button>
@@ -443,6 +445,11 @@ export default {
             }
         },
 
+        enableTooltips() {
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+        },
+
     },
     mounted() {
         this.fetchQuizQuestions();
@@ -452,5 +459,7 @@ export default {
         modalElement.addEventListener("hidden.bs.modal", () => {
             this.resetQuestionModal();
         });
+
+        this.enableTooltips();
     }
 }

@@ -27,7 +27,6 @@ export default {
             <a href="#" class="link-success link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover" data-bs-toggle="modal" data-bs-target="#addSubjectModal"><i class="bi bi-plus-circle"></i> Add  Subject</a>
             </div>
         </div>
-        <hr>
         <div v-if="filteredSubjects.length == 0" class="text-center alert alert-warning fw-bold m-4">No Subjects Found</div>
         <div v-else class="d-flex flex-wrap">
             <div v-for="subject in filteredSubjects">

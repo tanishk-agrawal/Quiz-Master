@@ -25,7 +25,18 @@ export default {
         </div>
     </div>`,
     methods: {
-      logout() {
+      async logout() {
+        const origin = window.location.origin;
+        const url = `${origin}/api/logout`;
+        const res = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                "Authentication-Token": localStorage.getItem("token")
+            },
+            credentials: "same-origin", // Include credentials (cookies) with the request
+        });
+        console.log(res);
         localStorage.clear();
         this.$router.push("/");
       }

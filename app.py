@@ -11,6 +11,8 @@ from application.models import db, User, Role
 from application.initial_data import create_initial_data
 from application.resources import api
 
+from application.celery_init import celery_init_app
+
 def create_app():
     app = Flask(__name__)
     
@@ -31,6 +33,9 @@ def create_app():
 
     return app
 
+
+app = create_app()
+celery = celery_init_app(app)
+
 if __name__ == "__main__":
-    app =create_app()
     app.run() 

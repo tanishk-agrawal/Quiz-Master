@@ -1,7 +1,7 @@
 export default {
     template: `
     <div class="">
-    <div class="card shadow-sm" style="height: 60px;">
+    <div class="card shadow-sm" style="height: 60px; z-index:1">
       <div class="card-body d-flex justify-content-between fw-bold">
         <span class="h5 m-0 fw-bold">Welcome, {{ username }}</span>
         <small class=""><i class="bi bi-envelope-at-fill"></i> {{ email }}</small>
