@@ -1,5 +1,7 @@
 import ProfileCard from '../components/ProfileCard.js'
 import DateTimeCard from '../components/DateTimeCard.js'
+import ChartSubjectPerformance from '../components/ChartSubjectPerformance.js'
+import ChartTimeVsScore from '../components/ChartTimeVsScore.js'
 
 export default{
     template : `
@@ -9,7 +11,8 @@ export default{
                 <div class="toast-body text-info-emphasis" v-if="toast==1">
                     <div class="spinner-border spinner-border-sm me-2" role="status"><span> </span>
                 </div>Export Initiated...</div>
-                <div class="toast-body text-success" v-if="toast==2"><i class="bi bi-check-circle-fill me-2"></i> Export Successful...</div>
+                <div class="toast-body text-success" v-else-if="toast==2"><i class="bi bi-check-circle-fill me-2"></i> Export Successful...</div>
+                <div class="toast-body text-danger" v-else-if="toast==3"><i class="bi bi-exclamation-circle-fill me-2"></i> Something went wrong. Try again later...</div>
             </div>
         </div> 
         <div class="row my-3 gx-3" >
@@ -20,8 +23,10 @@ export default{
                 <DateTimeCard></DateTimeCard>
             </div>
         </div>
-        <hr>
-        <div class="row mt-4">
+        <hr><div class="row gx-1">
+            <ChartTimeVsScore class="col me-2"/><ChartSubjectPerformance class="col ms-2"/>
+        </div>
+        <div class="row mt-3">
             <div class="col">
                 <h3 class="fw-bold">Attempt History </h3>
             </div>
@@ -69,6 +74,8 @@ export default{
     components: {
         ProfileCard,
         DateTimeCard,
+        ChartSubjectPerformance,
+        ChartTimeVsScore
     },
     methods:{
 
@@ -99,10 +106,7 @@ export default{
         },
 
         async exportCSV(){
-            this.toast = 1;
-            const toast = document.querySelector('.toast');
-            const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toast);
-            toastBootstrap.show();
+            this.showToast(1);
 
             const origin = window.location.origin;
             const url = `${origin}/api/export-csv`; 
@@ -126,12 +130,24 @@ export default{
             }
         },
 
-        getCSV(id){
-            this.toast = 2;
+        showToast(n){
+            this.toast = n;
             const toast = document.querySelector('.toast');
             const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toast);
             toastBootstrap.show();
-            window.location.href = '/api/get-csv/' + id;
+        },
+
+        getCSV(id){
+            fetch('/api/is-ready/' + id ).then(res => res.json())
+            .then(data => {
+                console.log(data);
+                if(data.ready){
+                    this.showToast(2);
+                    window.location.href = '/api/get-csv/' + id;
+                } else {
+                    this.showToast(3);
+                }
+            });
         },
 
         progressStyle(percent) {

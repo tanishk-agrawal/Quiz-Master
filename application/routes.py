@@ -1,9 +1,11 @@
-from flask import render_template, request, jsonify, send_file
+from flask import render_template, redirect, request, jsonify, send_file
 from flask_security import auth_required, roles_required, roles_accepted, SQLAlchemyUserDatastore, current_user
 from flask_security.utils import hash_password, verify_password, login_user, logout_user
 from celery.result import AsyncResult
 from .models import *
 from .tasks import *
+
+import datetime
 
 def create_routes(app, user_datastore):
 
@@ -26,6 +28,8 @@ def create_routes(app, user_datastore):
         
         if verify_password(password, user.password):
             login_user(user)
+            user.last_login = datetime.datetime.now()
+            db.session.commit()
             return jsonify({'token' : user.get_auth_token(), 'email' : user.email, 'username' : user.username, 'role' : user.roles[0].name}), 200
         else :
             return jsonify({'message' : 'invalid password'}), 400
@@ -86,6 +90,8 @@ def create_routes(app, user_datastore):
     @auth_required('session')
     def get_csv(id):
         result = AsyncResult(id)
+        if not result.ready():
+            return redirect('/#/')
         return send_file('static/csv/' + result.result, as_attachment=True)
     
     @app.route('/api/is-ready/<id>') 
@@ -93,3 +99,19 @@ def create_routes(app, user_datastore):
     def is_ready(id):
         result = AsyncResult(id)
         return {'ready': result.ready()}
+    
+    @app.route('/api/mail')
+    def mail():
+        result = daily_reminder.delay() 
+        return jsonify({
+            "id": result.id,
+            "result": result.result,
+        })
+    
+    @app.route('/api/mail-report')
+    def mail_report():
+        result = monthly_report.delay() 
+        return jsonify({
+            "id": result.id,
+            "result": result.result,
+        })

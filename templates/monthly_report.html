@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthy Report - Quiz Master</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body class="bg-warning bg-opacity-10 container">
+    <div class="row my-2">   
+        <div class="col fw-bold fs-1"><a href="http://127.0.0.1:5000/#/" class="text-dark text-decoration-none">Quiz Master</a></div>
+        <div class="col text-end align-self-center fw-bold font-monospace">Monthly Report - {{ month }}</div>
+    <hr></div>
+    {% if no_of_quizzes > 0 %}
+    <p class="h6 m-4 mt-2">
+        Hi <b>{{user.username}}</b>,<br><br>  
+        You have attempted {{no_of_quizzes}} quizzes in the month of {{month}}. <br>
+        Please refer to this report to gain insights on your performance this month.
+    </p>
+    <div class="row m-2">
+        <div class="col">
+            <div class="card shadow-sm p-3"><canvas id="bubbleChart"></canvas></div>
+        </div>
+        <div class="col">
+            <div class="card shadow-sm p-3"><canvas id="subjectPerformanceChart"></canvas></div>
+        </div>
+    </div>
+    <div class="row m-4 card shadow-sm rounded-2 p-3 text-center">
+        <table class="table table-hover my-1">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Quiz Name</th>
+                    <th scope="col">Subject</th>
+                    <th scope="col">Chapter</th>
+                    <th scope="col">Submitted on</th>
+                    <th scope="col">Percentage</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for attempt in attempts %}
+                <tr class="" >
+                    <th scope="row">{{ attempt['s.no.'] }}</th>
+                    <td>{{ attempt.quiz }}</td>
+                    <td>{{ attempt.subject }}</td>
+                    <td>{{ attempt.chapter }}</td>
+                    <td>{{ attempt.submitted_at }}</td>
+                    <td>
+                        <div class="progress my-1 position-relative fw-bold" role="progressbar">
+                            {% set progress_color = "" %}
+                            {% if attempt.percentage < 30 %}
+                                {% set progress_color = "#dc3545" %}
+                            {% elif attempt.percentage < 60 %}
+                                {% set progress_color = "#ffc107" %}
+                            {% elif attempt.percentage < 80 %}
+                                {% set progress_color = "#bbdc35" %}
+                            {% else %}
+                                {% set progress_color = "#198754" %}
+                            {% endif %}
+                            <div class="progress-bar fw-bold" style="background-color: {{ progress_color }}; width: {{ attempt.percentage }}%;"></div>
+                            <div class="position-absolute top-50 start-50 translate-middle {% if attempt.percentage < 80 %}text-black{% else %}text-white{% endif %}">{{ attempt.percentage }}%</div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="h6 m-2">
+        Hi <b>{{user.username}}</b>,<br> <br>  
+        You have not attempted any quizzes in the month of {{month}}.<br>
+        Don’t miss out on sharpening your skills! 
+        <a href="http://127.0.0.1:5000/#/" class="text-warning-emphasis">
+            Click here to explore available quizzes and start now.
+        </a>
+    </p>
+    {% endif %}
+    <hr>
+    <div class="m-2" id="footer">
+        <div class="text-center small text-muted">--Team Quiz Master--</div>
+    </div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const sorted = {{subjects | tojson}}.map((item, index) => ({ 
+            label: item.name,
+            percentage: item.average,
+        })).sort((a, b) => b.percentage - a.percentage);
+
+    const labels = sorted.map(item => item.label);
+    const percentages = sorted.map(item => item.percentage);
+    console.log(this.chartData, labels, percentages);
+
+    const backgroundColors = percentages.map(percent => {
+        if (percent < 30) return "#dc35458a";       // red
+        else if (percent < 60) return "#ffc1078a";  // yellow
+        else if (percent < 80) return "#bbdc358a";  // lime green
+        else return "#1987548a";                    // green
+    });
+
+    new Chart(document.getElementById('subjectPerformanceChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Performance (%)',
+                data: percentages,
+                backgroundColor: backgroundColors,
+                borderColor: '#343a40',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Subject-wise Performance (%)',
+                    font: {
+                        size: 20,
+                        weight: 'bold'
+                    }
+                },
+                legend: {
+                    display: false
+                },
+            },
+        scales: {
+            yAxes: [{
+            ticks: {
+                beginAtZero: true,
+                max: 100
+            },
+            scaleLabel: {
+                display: true,
+                labelString: 'Percentage (%)'
+            }
+            }],
+            xAxes: [{
+            scaleLabel: {
+                display: true,
+                labelString: 'Subjects'
+            }
+            }]
+        },
+        responsive: true,
+        maintainAspectRatio: false
+        }
+    });        
+</script>
+<script>
+    new Chart(document.getElementById('bubbleChart'), {
+        type: 'bubble',
+        data: {
+        datasets: [{
+            label: 'User Quiz Attempts',
+            data: {{chartData | tojson}},
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+        },
+        options: {
+        responsive: true,
+        plugins: {
+            title: {
+            display: true,
+            text: 'Quiz Scores vs Time Spent',
+            font: {
+                size: 20,
+                weight: 'bold'
+            }
+            },
+            legend: {
+            display: false
+            },
+            tooltip: {
+            callbacks: {
+                label: function(context) {
+                const d = context.raw;
+                return `Quiz: ${d.quiz}, Score: ${d.y}%, Time: ${d.x} min, #Ques: ${d.no_of_ques}`;
+                }
+            }
+            }
+        },
+        scales: {
+            x: {
+            title: { display: true, text: 'Time Taken (minutes)' }
+            },
+            y: {
+            title: { display: true, text: 'Score (%)' },
+            min: 0,
+            max: 100
+            }
+        },
+    responsive: true,
+    maintainAspectRatio: false
+    }
+    });
+</script>
+</html>

@@ -30,3 +30,5 @@ def hhmm_to_minutes(time_str):
 
 def datetime_to_string(dt):
     return dt.strftime("%d/%m/%Y %I:%M %p") if dt else None
+
+

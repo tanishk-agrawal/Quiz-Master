@@ -11,8 +11,8 @@ export default {
             
             <router-link :to="'/quiz/' + quiz.id" class="stretched-link link-dark link-underline-opacity-0">
             <div class="d-flex justify-content-between mb-2">
-                <span class="h4 card-title text-warning-emphasis ">{{quiz.name}} </span>
-                <span v-if="is_live()" class="badge text-danger border border-2 border-danger my-auto font-monospace fw-bold">⏺ LIVE</span>
+                <span class="h4 card-title text-warning-emphasis me-1">{{quiz.name}} </span>
+                <span v-if="is_live()" class="badge text-danger border border-2 border-danger my-auto ms-1 font-monospace fw-bold">⏺ LIVE</span>
             </div>
             </router-link> 
             <div>

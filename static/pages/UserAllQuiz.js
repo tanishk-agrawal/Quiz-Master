@@ -12,7 +12,12 @@ export default{
             </div>
         </div>
         <hr>
-        <div class="row" v-if='filteredUpcomingQuizzes.length == 0 && filteredPastQuizzes.length == 0' class="text-center alert alert-warning fw-bold m-4">No Quizzes Found</div>
+        <div class="row" v-if='loading' class="text-center alert alert-warning fw-bold m-4d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        </div>
+        <div class="row" v-else-if='filteredUpcomingQuizzes.length == 0 && filteredPastQuizzes.length == 0' class="text-center alert alert-warning fw-bold m-4">No Quizzes Found</div>
         <div class="row gx-1" v-if='filteredUpcomingQuizzes.length > 0'>
             <h4>Live & Upcoming</h4>
             <div class="col-auto" v-for="quiz in filteredUpcomingQuizzes">
@@ -37,7 +42,8 @@ export default{
                 past: []
             },
 
-            searchString:""
+            searchString:"",
+            loading:false
         }
     },
     computed: {
@@ -73,6 +79,7 @@ export default{
 
     methods: {
         async fetchRecentQuizzes() {
+            this.loading = true;
             const origin = window.location.origin;
             const url = `${origin}/api/quiz/get`;
             const res = await fetch(url, {
@@ -97,6 +104,7 @@ export default{
                 const errorData = await res.json();
                 console.error(errorData);
             }
+            this.loading = false;
         }
     },
 

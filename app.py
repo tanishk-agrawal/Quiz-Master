@@ -12,6 +12,9 @@ from application.initial_data import create_initial_data
 from application.resources import api
 
 from application.celery_init import celery_init_app
+from celery.schedules import crontab
+
+from application.tasks import daily_reminder, monthly_report
 
 def create_app():
     app = Flask(__name__)
@@ -36,6 +39,18 @@ def create_app():
 
 app = create_app()
 celery = celery_init_app(app)
+celery.autodiscover_tasks()
+
+@celery.on_after_finalize.connect 
+def setup_periodic_tasks(sender, **kwargs):
+
+    #Daily reminder
+    sender.add_periodic_task(30.0, daily_reminder.s()) #for testing
+    # sender.add_periodic_task(crontab(minute=0, hour=18), daily_reminder.s()) #send daily at 6pm
+
+    #Monthly report
+    sender.add_periodic_task(45.0, monthly_report.s()) #for testing
+    # sender.add_periodic_task(crontab(0, 0, day_of_month=1), monthly_report.s()) #send 1st of every month
 
 if __name__ == "__main__":
     app.run() 

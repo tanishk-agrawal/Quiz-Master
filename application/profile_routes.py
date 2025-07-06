@@ -124,3 +124,47 @@ def create_routes(app, user_datastore):
                 chapter['average'] = sum(chapter['scores'])/chapter['no_of_quizzes'] if chapter['no_of_quizzes'] > 0 else 0
 
         return jsonify(dict), 200
+
+    @app.route('/api/user-subject-performance', methods=['GET'])
+    @auth_required('token')
+    def get_subject_performance():        
+        user = current_user        
+        dict = {'user_id': user.id, 'email' : user.email, 'username' : user.username, 'subjects': []}
+        for attempt in user.attempts:
+            f1 = False
+            for subject in dict['subjects']:
+                if subject['name'] == attempt.quiz.chapter.subject.name:
+                    f1 = True
+                    subject['scores'].append((attempt.marks_scored/attempt.max_marks)*100)
+                    break
+            if not f1:
+                dict['subjects'].append({'name': attempt.quiz.chapter.subject.name, 'scores': [(attempt.marks_scored/attempt.max_marks)*100]})
+
+        for subject in dict['subjects']:
+            subject['no_of_quizzes'] = len(subject['scores'])
+            subject['average'] = round(sum(subject['scores'])/subject['no_of_quizzes'], 1) if subject['no_of_quizzes'] > 0 else 0
+        
+        return jsonify(dict), 200
+    
+
+    @app.route('/api/user-bubble-data', methods=['GET'])
+    @auth_required('token')
+    def get_user_bubble_data():        
+        user = current_user 
+        attempts = Attempt.query.filter(Attempt.user_id == user.id).all()
+
+        data = []
+        for attempt in attempts:
+            time_taken = (attempt.submitted_at - attempt.started_at).total_seconds() / 60  
+            percent = (attempt.marks_scored / attempt.max_marks) * 100
+            ques_attempted = len([score for score in attempt.scores if score.selected_option_id is not None]) 
+
+            data.append({
+                'x': round(time_taken, 2),
+                'y': round(percent, 2),
+                'r': min(15, max(5, ques_attempted)),
+                'quiz' : attempt.quiz.name,
+                'no_of_ques' : ques_attempted
+            })
+           
+        return jsonify(data), 200

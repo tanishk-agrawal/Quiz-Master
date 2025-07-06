@@ -23,8 +23,12 @@ export default {
             <router-link to="/quiz/all" class="link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"> See All 🡲</router-link>
             </div>
         </div>
-        
-        <div class="row" v-if='quizzes.length === 0' class="text-center alert alert-warning fw-bold m-4">No Live or Upcoming Quizzes Found</div>
+        <div class="row" v-if='quizLoading' class="text-center alert alert-warning fw-bold m-4d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        </div>
+        <div class="row" v-else-if='quizzes.length === 0' class="text-center alert alert-warning fw-bold m-4">No Live or Upcoming Quizzes Found</div>
         <div class="row gx-0" v-else>
             <div class="col-auto"  v-for="quiz in quizzes.slice(0, 5)">
                 <UserQuizCard :quiz="quiz" :showHeader="true"></UserQuizCard>
@@ -37,7 +41,12 @@ export default {
             <h3 class="fw-bold">Subjects</h3>
             </div>
         </div>
-        <div v-if="subjects.length == 0" class="text-center alert alert-warning fw-bold m-4">No Subjects Found</div>
+        <div class="row" v-if='subjectLoading' class="text-center alert alert-warning fw-bold m-4d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        </div>
+        <div v-else-if="subjects.length == 0" class="text-center alert alert-warning fw-bold m-4">No Subjects Found</div>
         <div class="d-flex flex-wrap" v-else>
             <div v-for="subject in subjects" >
                 <UserSubjectCard :subject="subject"></UserSubjectCard>
@@ -54,12 +63,15 @@ export default {
     data() {
         return {
             quizzes: [],
-            subjects: []
+            subjects: [],
+            quizLoading: false,
+            subjectLoading: false
         }
     },
 
     methods: {
         async fetchRecentQuizzes() {
+            this.quizLoading = true;
             const origin = window.location.origin;
             const url = `${origin}/api/quiz/get?n=5`;
             const res = await fetch(url, {
@@ -84,8 +96,10 @@ export default {
                 const errorData = await res.json();
                 console.error(errorData);
             }
+            this.quizLoading = false;
         },
         async fetchSubjects() {
+            this.subjectLoading = true;
             const origin = window.location.origin;
             const url = `${origin}/api/subject`;
             const res = await fetch(url, {
@@ -110,6 +124,7 @@ export default {
                 const errorData = await res.json();
                 console.error(errorData);
             }
+            this.subjectLoading = false;
         },
     },
 
