@@ -14,7 +14,7 @@ export default {
             <div v-else>
                 <router-link to="/admin/dashboard" class="text-decoration-none text-dark mx-2"><i class="bi bi-house-fill"></i> Home</router-link>
                 <router-link to="/admin/users" class="text-decoration-none text-dark mx-2"><i class="bi bi-people-fill"></i> Users</router-link>
-                <router-link to="" class="text-decoration-none text-dark mx-2"><i class="bi bi-bar-chart-line-fill"></i> Stats</router-link>                
+                <router-link to="/admin/stats" class="text-decoration-none text-dark mx-2"><i class="bi bi-bar-chart-line-fill"></i> Stats</router-link>                
             </div>
         </div>
         <div class="col-auto my-auto text-end p-0" v-if="currentRoute.meta.requiresLogin">

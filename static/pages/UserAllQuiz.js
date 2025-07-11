@@ -13,9 +13,9 @@ export default{
         </div>
         <hr>
         <div class="row" v-if='loading' class="text-center alert alert-warning fw-bold m-4d-flex justify-content-center">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
         </div>
         <div class="row" v-else-if='filteredUpcomingQuizzes.length == 0 && filteredPastQuizzes.length == 0' class="text-center alert alert-warning fw-bold m-4">No Quizzes Found</div>
         <div class="row gx-1" v-if='filteredUpcomingQuizzes.length > 0'>
@@ -98,13 +98,12 @@ export default{
                 if (res.status === 401) {
                     localStorage.clear();
                     this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
-                } else if (res.status === 404) {
-                    this.quizzes = [];
-                }
+                } 
                 const errorData = await res.json();
                 console.error(errorData);
             }
             this.loading = false;
+            console.log(this.loading)
         }
     },
 

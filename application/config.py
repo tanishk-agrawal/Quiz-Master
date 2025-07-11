@@ -10,3 +10,6 @@ def config(app):
     app.config['WTF_CSRF_CHECK_DEFAULT'] = False
     app.config['SECURITY_CSRF_PROTECT_MECHANISHMS'] = []
     app.config['SECURITY_CSRF_IGNORE_UNAUTH_ENDPOINTS'] = True
+
+    app.config['CACHE_TYPE'] = 'RedisCache'
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 300  # Cache timeout in seconds/ 5min

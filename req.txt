@@ -6,6 +6,7 @@ async-timeout==5.0.1
 bcrypt==4.0.1
 billiard==4.2.1
 blinker==1.8.2
+cachelib==0.13.0
 celery==5.5.3
 cffi==1.17.1
 click==8.1.7
@@ -17,6 +18,7 @@ dnspython==2.6.1
 email_validator==2.1.1
 Faker==37.4.0
 Flask==3.0.3
+Flask-Caching==2.3.1
 Flask-Login==0.6.3
 Flask-Principal==0.4.0
 Flask-RESTful==0.3.10

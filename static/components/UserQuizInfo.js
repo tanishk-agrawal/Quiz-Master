@@ -1,9 +1,13 @@
 export default{
     template:`
     <div class="card p-2">
-        <div class="row d-flex justify-content-center" style="max-width: 800px">
+        <small class="row d-flex justify-content-center" style="max-width: 800px">
             <div class="col-auto my-auto">
-            <table class="table table-sm w-auto">
+            <div class="mb-2">                
+                <span class="badge text-bg-warning bg-opacity-100 me-1">{{quiz.subject.name}}</span><i class="bi bi-caret-right-fill"></i>
+                <span class="badge text-bg-warning bg-opacity-100 mx-1">{{quiz.chapter.name}}</span>
+            </div>
+            <table class="table table-sm w-auto m-0">
             <tbody class="">
                 <tr>
                     <th class="pe-3">Time Limit </th>
@@ -26,9 +30,9 @@ export default{
                     <td> {{quiz.created_on_formatted}} </td>
                 </tr>
                 <tr>
-                    <th>Deadline </th>
+                    <th>Scheduled On </th>
                     <td> : </td>
-                    <td><span v-if="!quiz.deadline">None</span>{{quiz.deadline_formatted}} </td>
+                    <td>{{quiz.scheduled_on_formatted}} </td>
                 </tr>
                 
             </tbody>
@@ -36,7 +40,7 @@ export default{
             </div>
             <div class="vr p-0 mx-2"></div>
             <div class="col" v-if='quiz.instructions' ><b>Instructions</b><br><div style="white-space: pre-wrap; max-height: 200px; overflow-y: scroll">{{quiz.instructions}}</div></div><br>
-        </div>
+        </small>
     </div>
     `,
     props: {

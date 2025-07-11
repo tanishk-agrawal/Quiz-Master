@@ -1,41 +1,28 @@
-import ProfileCard from '../components/ProfileCard.js'
-import DateTimeCard from '../components/DateTimeCard.js'
 import ChartSubjectPerformance from '../components/ChartSubjectPerformance.js'
 import ChartTimeVsScore from '../components/ChartTimeVsScore.js'
 
 export default{
     template : `
     <div>
-        <div class="toast align-items-center position-absolute border border-dark" style="top: 50px; right:10px; z-index: 5" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex fw-bold">
-                <div class="toast-body text-info-emphasis" v-if="toast==1">
-                    <div class="spinner-border spinner-border-sm me-2" role="status"><span> </span>
-                </div>Export Initiated...</div>
-                <div class="toast-body text-success" v-else-if="toast==2"><i class="bi bi-check-circle-fill me-2"></i> Export Successful...</div>
-                <div class="toast-body text-danger" v-else-if="toast==3"><i class="bi bi-exclamation-circle-fill me-2"></i> Something went wrong. Try again later...</div>
+        <div class="row my-3 font-monospace fw-bold">
+            <div class="col card shadow-sm p-3 me-2 fs-5">
+                <span class="bi bi-person-vcard"> {{user.username}}</span>
+                <span class="bi bi-envelope-at-fill"> {{user.email}}</span>
             </div>
-        </div> 
-        <div class="row my-3 gx-3" >
-            <div class="col">
-                <ProfileCard></ProfileCard>
+            <div class="col card shadow-sm p-3 mx-2">
+                <span class="fs-3">{{user.no_of_quizzes}}</span>
+                <span class="">Quizzes Attempted</span>
             </div>
-            <div class="col-auto">
-                <DateTimeCard></DateTimeCard>
+            <div class="col card shadow-sm p-3 ms-2">
+                <span class="fs-3">{{user.average}}%</span>
+                <span class="">Overall Performance</span>
             </div>
         </div>
-        <hr>
-        <div class="row" v-if='attempts.length === 0' class="text-center alert alert-warning fw-bold m-4">No Quiz Attempted </div>
-        <div v-else><div class="row gx-1">
-            <ChartTimeVsScore class="col me-2"/><ChartSubjectPerformance class="col ms-2"/>
+        <div class="row my-3" >
+            <ChartTimeVsScore :isAdmin="true" class="col me-2"/>
+            <ChartSubjectPerformance :isAdmin="true" class="col ms-2"/> 
         </div>
-        <div class="row mt-3">
-            <div class="col">
-                <h3 class="fw-bold">Attempt History </h3>
-            </div>
-            <div class="col my-auto text-end fw-bold">
-            <a href="#" @click="exportCSV" class="link-success link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover"><i class="bi bi-download"></i> Export CSV</a>
-            </div>
-        </div>
+        
         <div class="row mt-2 card shadow-sm rounded-2 p-3 text-center">
             <table class="table table-hover my-1">
                 <thead>
@@ -49,7 +36,7 @@ export default{
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="attempt, index in attempts" class="" style="cursor: pointer;" @click="$router.push('/quiz/' + attempt.quiz.id + '/result')">
+                    <tr v-for="attempt, index in attempts" class="">
                         <th scope="row">{{index + 1}}</th>
                         <td>{{attempt.quiz.name}}</td>
                         <td>{{attempt.quiz.subject.name}}</td>
@@ -62,7 +49,7 @@ export default{
                     </tr>
                 </tbody>
             </table>
-        </div></div>
+        </div>
               
 
     </div>
@@ -70,20 +57,41 @@ export default{
     data(){
         return{
             attempts : [],
-            toast : 0,
+            user : {},
         }
     },
     components: {
-        ProfileCard,
-        DateTimeCard,
         ChartSubjectPerformance,
         ChartTimeVsScore
     },
     methods:{
+        async fetchUser() {
+            const origin = window.location.origin;
+            const url = `${origin}/api/user-performance/${this.$route.params.id}`;
+            const res = await fetch(url, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authentication-Token": localStorage.getItem("token")
+                },
+                credentials: "same-origin",
+            });
 
+            if (res.ok) {
+                const data = await res.json();
+                this.user = data;
+            } else {
+                if (res.status === 401) {
+                    localStorage.clear();
+                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
+                } 
+                const errorData = await res.json();
+                console.error(errorData);
+            }
+        },
         async fetchHistory(){
             const origin = window.location.origin;
-            const url = `${origin}/api/user/history`; 
+            const url = `${origin}/api/user/history?user_id=${this.$route.params.id}`; 
             const res = await fetch(url, {
                 method: "GET",
                 headers: {
@@ -101,55 +109,12 @@ export default{
                 if (res.status === 401) {
                     localStorage.clear();
                     this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
-                } 
-                const errorData = await res.json();
-                console.error(errorData);
-            }
-        },
-
-        async exportCSV(){
-            this.showToast(1);
-
-            const origin = window.location.origin;
-            const url = `${origin}/api/export-csv`; 
-            const res = await fetch(url, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authentication-Token': localStorage.getItem("token")
-                },
-                credentials: "same-origin"
-            })
-            if (res.ok) {
-                const data = await res.json();                
-                setTimeout(() => this.getCSV(data.id), 1000);
-            } else {
-                if (res.status === 401) {
-                    localStorage.clear();
-                    this.$router.push({ name: 'login', params:{error: "Session Expired : Please Login Again"}});
-                } 
-                const errorData = await res.json();
-                console.error(errorData);
-            }
-        },
-
-        showToast(n){
-            this.toast = n;
-            const toast = document.querySelector('.toast');
-            const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toast);
-            toastBootstrap.show();
-        },
-
-        getCSV(id){
-            fetch('/api/is-ready/' + id ).then(res => res.json())
-            .then(data => {
-                console.log(data);
-                if(data.ready){
-                    this.showToast(2);
-                    window.location.href = '/api/get-csv/' + id;
-                } else {
-                    this.showToast(3);
+                } else if (res.status === 404) {
+                    this.$router.push("/404");
                 }
-            });
+                const errorData = await res.json();
+                console.error(errorData);
+            }
         },
 
         progressStyle(percent) {
@@ -165,6 +130,7 @@ export default{
         }
     },
     mounted() {
+        this.fetchUser();
         this.fetchHistory();
     }
 }

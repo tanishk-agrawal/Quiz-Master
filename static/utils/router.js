@@ -17,6 +17,8 @@ import AdminSubjectView from "../pages/AdminSubjectView.js";
 import AdminChapterView from "../pages/AdminChapterView.js";
 import AdminQuizView from "../pages/AdminQuizView.js";
 import AdminUsersView from "../pages/AdminUsersView.js";
+import AdminUserHistory from "../pages/AdminUserHistory.js";
+import AdminStats from "../pages/AdminStats.js";
 
 const routes = [
     { path: "/", component: Home, meta: { requiresLogin: false } },
@@ -39,6 +41,8 @@ const routes = [
     { path: "/admin/chapter/:id", component: AdminChapterView, meta: { requiresLogin: true, role: "admin" } },
     { path: "/admin/quiz/:id", component: AdminQuizView, meta: { requiresLogin: true, role: "admin" } },
     { path: "/admin/users", component: AdminUsersView, meta: { requiresLogin: true, role: "admin" } },
+    { path: "/admin/user/:id", component: AdminUserHistory, meta: { requiresLogin: true, role: "admin" } },
+    { path: "/admin/stats", component: AdminStats, meta: { requiresLogin: true, role: "admin" } },
 ];
 
 const router = new VueRouter({

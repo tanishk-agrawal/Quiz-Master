@@ -5,7 +5,7 @@ from .models import *
 from .func import *
 from datetime import datetime, timedelta
 
-def create_routes(app):
+def create_routes(app, cache):
 
     @app.route('/api/quiz', methods=['POST'])
     @auth_required('token')
@@ -215,6 +215,7 @@ def create_routes(app):
     
 
     @app.route('/api/quiz/get', methods=['GET'])
+    @cache.cached(timeout=300, key_prefix='quizzes_data')
     @auth_required('token')
     def get_quiz():
         
@@ -245,6 +246,7 @@ def create_routes(app):
         return jsonify({'upcoming': upcoming, 'past': past}), 200
     
     @app.route('/api/chapter/<int:id>/quiz/user', methods=['GET'])
+    @cache.cached(timeout=300)
     @auth_required('token')
     def get_chapter_quiz(id):
         chapter = Chapter.query.get(id)
@@ -381,6 +383,7 @@ def create_routes(app):
         return {'message': 'attempt created successfully'}, 201
     
     @app.route('/api/quiz/<int:id>/user/result', methods=['GET'])
+    @cache.cached(timeout=300)
     @auth_required('token')
     def get_user_result(id):
         quiz = Quiz.query.get(id)
@@ -412,7 +415,14 @@ def create_routes(app):
     @app.route('/api/user/history', methods=['GET'])
     @auth_required('token')
     def get_user_history():
-        attempts = Attempt.query.filter(Attempt.user_id == current_user.id).order_by(Attempt.submitted_at.desc()).all()
+        if current_user.roles[0].name == 'admin': 
+            id = request.args.get('user_id')
+            user = User.query.get(id)
+            if not user:
+                return jsonify({'message': 'user not found'}), 404
+        else:
+            user = current_user
+        attempts = Attempt.query.filter(Attempt.user_id == user.id).order_by(Attempt.submitted_at.desc()).all()
         if not attempts:
             return jsonify({'message': 'no attempts found'}), 404
 

@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_security import Security, SQLAlchemyUserDatastore
+from flask_caching import Cache
 
 from application.config import config
 
@@ -29,10 +30,12 @@ def create_app():
         db.create_all()
         create_initial_data(user_datastore)
 
+    cache = Cache(app)
+
     api.init_app(app)
     routes.create_routes(app, user_datastore)
     profile_routes.create_routes(app, user_datastore)
-    quiz_routes.create_routes(app)
+    quiz_routes.create_routes(app, cache)
 
     return app
 

@@ -5,6 +5,10 @@ export default {
     </div>`,
 
     props : {
+        isAdmin : {
+            type: Boolean,
+            default: false,
+        },
 
     },
 
@@ -19,7 +23,10 @@ export default {
     methods : {
         async getChartData(){
             const origin = window.location.origin;
-            const url = `${origin}/api/user-bubble-data`; 
+            let url = `${origin}/api/user-bubble-data`; 
+            if(this.isAdmin){
+                url = `${origin}/api/user-bubble-data?user_id=${this.$route.params.id}`;
+            }
             const res = await fetch(url, {
                 method: "GET",
                 headers: {
@@ -72,9 +79,13 @@ export default {
                     },
                     tooltip: {
                     callbacks: {
+                        title: function (tooltipItems) {
+                            const item = tooltipItems[0].raw;
+                            return item.quiz; // You can customize this string
+                        },
                         label: function(context) {
-                        const d = context.raw;
-                        return `Quiz: ${d.quiz}, Score: ${d.y}%, Time: ${d.x} min, #Ques: ${d.no_of_ques}`;
+                            const d = context.raw;
+                            return [`Score: ${d.y}%, Time: ${d.x} min`, `No. of Ques: ${d.no_of_ques}`];
                         }
                     }
                     }

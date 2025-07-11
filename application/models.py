@@ -48,7 +48,7 @@ class Quiz(db.Model):
     instructions = db.Column(db.String())
     time_limit = db.Column(db.Integer(), nullable=False) # in minutes
     created_on = db.Column(db.DateTime(), nullable=False)
-    scheduled_on = db.Column(db.DateTime())
+    scheduled_on = db.Column(db.DateTime(), nullable=False)
     show = db.Column(db.Boolean(), default=False)
     
     chapter_id = db.Column(db.Integer, db.ForeignKey('chapter.id'), nullable=False)

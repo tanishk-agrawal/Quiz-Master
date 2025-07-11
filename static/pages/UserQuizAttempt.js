@@ -8,7 +8,7 @@ export default{
             <div class="row text-center px-2">
                 <div class="col text-start my-auto">
                     <span class="h4 fw-bold me-3"> {{quiz.name}}</span> 
-                    <a href="#"  class="dropdown link-primary" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-info-circle"></i></a>
+                    <a href="#"  class="dropdown link-primary h5" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-info-circle"></i></a>
                     <div  class="dropdown-menu p-0"><UserQuizInfo :quiz="quiz"></UserQuizInfo></div>
                 </div>
                 <div class="col-auto">

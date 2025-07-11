@@ -54,7 +54,7 @@ export default {
             </div>
             <div class="modal-body">
                 <div class="form-floating mb-2">
-                    <input type="password" class="form-control" id="password" v-model="changePasswordFormData.password" placeholder="Current Password" required>
+                    <input type="password" class="form-control" id="currpassword" v-model="changePasswordFormData.password" placeholder="Current Password" required>
                     <label for="password">Current Password</label>
                 </div>
                 <div class="form-floating mb-2">

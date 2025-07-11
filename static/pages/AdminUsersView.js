@@ -34,7 +34,7 @@ export default {
         </thead>        
         <caption v-if="filteredUsers.length == 0"><div class="text-center alert alert-warning fw-bold m-4">No Users Found</div></caption>
         <tbody>
-            <tr  v-for="user, index in filteredUsers">
+            <tr  v-for="user, index in filteredUsers" :style="(user.no_of_quizzes<=0) ? 'cursor: default;' : 'cursor: pointer;'" @click="goToUser(user)">
                 <th scope="row">{{index + 1}}</th>
                 <td>{{user.username}}</td>
                 <td>{{user.email}}</td>
@@ -153,6 +153,10 @@ export default {
                 backgroundColor: color,
                 width: percent + '%'
             };
+        },
+
+        goToUser(user){
+            if (user.no_of_quizzes > 0) this.$router.push('/admin/user/' + user.id);
         }
     },
     mounted() {

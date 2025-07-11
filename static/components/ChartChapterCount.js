@@ -1,14 +1,11 @@
 export default {
     template: `
     <div class="card shadow-sm p-3">
-        <canvas id="subjectPerformanceChart"></canvas>
+        <canvas id="chapterCountChart"></canvas>
     </div>`,
 
     props : {
-        isAdmin : {
-            type: Boolean,
-            default: false,
-        },
+        
 
     },
 
@@ -23,10 +20,7 @@ export default {
     methods : {
         async getChartData(){
             const origin = window.location.origin;
-            let url = `${origin}/api/user-subject-performance`; 
-            if(this.isAdmin){
-                url = `${origin}/api/user-subject-performance?user_id=${this.$route.params.id}`; 
-            }
+            const url = `${origin}/api/subject-chapter-counts`; 
             const res = await fetch(url, {
                 method: "GET",
                 headers: {
@@ -51,31 +45,17 @@ export default {
         },
 
         renderChart() {
-        const sorted = this.chartData.subjects.map((item, index) => ({ 
-            label: item.name,
-            percentage: item.average,
-        })).sort((a, b) => b.percentage - a.percentage);
+        const labels = this.chartData.subjects.map(item => item.name);
+        const counts = this.chartData.subjects.map(item => item.chapters);
+        console.log(this.chartData, labels, counts);
 
-        const labels = sorted.map(item => item.label);
-        const percentages = sorted.map(item => item.percentage);
-        console.log(this.chartData, labels, percentages);
-
-        const backgroundColors = percentages.map(percent => {
-            if (percent < 30) return "#dc35458a";       // red
-            else if (percent < 60) return "#ffc1078a";  // yellow
-            else if (percent < 80) return "#bbdc358a";  // lime green
-            else return "#1987548a";                    // green
-        });
-
-        new Chart(document.getElementById('subjectPerformanceChart'), {
-            type: 'bar',
+        new Chart(document.getElementById('chapterCountChart'), {
+            type: 'line',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Performance (%)',
-                    data: percentages,
-                    backgroundColor: backgroundColors,
-                    borderColor: '#343a40',
+                    label: 'Chapters',
+                    data: counts,
                     borderWidth: 1
                 }]
             },
@@ -83,7 +63,7 @@ export default {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Subject-wise Performance (%)',
+                        text: 'Subjects & Chapters Distribution',
                         font: {
                             size: 20,
                             weight: 'bold'
@@ -94,19 +74,11 @@ export default {
                     },
                 },
             scales: {
-                y: { 
-                    beginAtZero: true,
-                    max: 100,
-                    title: { 
-                        display: true,
-                        text: 'Percentage (%)'
-                    },
-                },
-                x: { 
-                    title: { 
-                        display: true,
-                        text: 'Subjects'
-                    },
+                y: {
+                beginAtZero: true,
+                ticks: {
+                    precision: 0
+                }
                 }
             },
             responsive: true,
