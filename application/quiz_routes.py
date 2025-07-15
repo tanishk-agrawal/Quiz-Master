@@ -4,6 +4,7 @@ from .models import *
 
 from .func import *
 from datetime import datetime, timedelta
+from time import sleep
 
 def create_routes(app, cache):
 
@@ -215,8 +216,8 @@ def create_routes(app, cache):
     
 
     @app.route('/api/quiz/get', methods=['GET'])
-    @cache.cached(timeout=300, key_prefix='quizzes_data')
     @auth_required('token')
+    @cache.cached(timeout=300, key_prefix='quizzes_data')
     def get_quiz():
         
         quizzes = Quiz.query.filter(Quiz.show == True).order_by(Quiz.scheduled_on).all()
@@ -246,8 +247,8 @@ def create_routes(app, cache):
         return jsonify({'upcoming': upcoming, 'past': past}), 200
     
     @app.route('/api/chapter/<int:id>/quiz/user', methods=['GET'])
-    @cache.cached(timeout=300)
     @auth_required('token')
+    @cache.cached(timeout=300)
     def get_chapter_quiz(id):
         chapter = Chapter.query.get(id)
         if not chapter:
@@ -372,7 +373,7 @@ def create_routes(app, cache):
                 is_correct = option.is_correct
 
             marks = question.marks if is_correct else 0
-
+            sleep(0.1)
             score = Score(question_id = question_id, attempt_id = attempt.id, selected_option_id = option_id, is_correct = is_correct, marks = marks)
             db.session.add(score)
             db.session.commit() 
@@ -383,8 +384,7 @@ def create_routes(app, cache):
         return {'message': 'attempt created successfully'}, 201
     
     @app.route('/api/quiz/<int:id>/user/result', methods=['GET'])
-    @cache.cached(timeout=300)
-    @auth_required('token')
+    @auth_required('token')   
     def get_user_result(id):
         quiz = Quiz.query.get(id)
         if not quiz or not quiz.show:

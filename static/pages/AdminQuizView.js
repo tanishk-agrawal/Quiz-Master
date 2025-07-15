@@ -373,6 +373,10 @@ export default {
 
         async createQuestion() {
             this.questionFormData.quiz_id = this.quizId;
+            if (!this.questionFormData.correct_option){
+                this.addQuestionerror = 'Please select one correct option';
+                return
+            }
             this.questionFormData.options[this.questionFormData.correct_option - 1].is_correct = true;
             console.log(this.questionFormData);
 

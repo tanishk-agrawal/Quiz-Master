@@ -21,11 +21,10 @@ export default {
                     <span>{{quiz.number_of_questions}} MCQs</span>
                     <span class="text-end"><i class="bi bi-clock-history"></i> {{quiz.time_limit_formatted}} </span>
                 </div>
-                <div class="text-muted">
-                    <div v-if="quiz.result.attempted">Result : <span :style="progressStyle(quiz.result.percentage)"> {{quiz.result.percentage}}% </span></div>
-                    <div v-else-if="is_quiz_ended()">Result : Not Attempted</div>
-                    <span v-else><i class="bi bi-calendar-week"></i>&nbsp;<span> {{quiz.scheduled_on_formatted}} </span></span>
-
+                <div class="">
+                    <span :class="is_quiz_ended() ? 'text-danger-emphasis' : 'text-warning-emphasis'">
+                        <i :class="is_quiz_ended() ? 'bi bi-calendar-x' :'bi bi-calendar-week'"></i>&nbsp;
+                    <span> {{quiz.scheduled_on_formatted}} </span></span>
                 </div>
                 </small>
             </div>
@@ -58,17 +57,6 @@ export default {
             const now = new Date();
             return scheduled_on <= now && now <= ends_on;
         },
-        progressStyle(percent) {
-            let color = "#198754";
-            if (percent < 30){color = "#dc3545";}
-            else if (percent < 60){color = "#ffc107";}
-            else if (percent < 80){color = "#bbdc35";}
-
-            return {
-                color: color,
-                width: percent + '%'
-            };
-        }
     },
     mounted() {
         console.log(this.quiz);

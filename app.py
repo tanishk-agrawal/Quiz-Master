@@ -5,8 +5,8 @@ from flask_caching import Cache
 from application.config import config
 
 from application import routes
-from application import profile_routes
 from application import quiz_routes
+from application import stats_routes
 
 from application.models import db, User, Role
 from application.initial_data import create_initial_data
@@ -34,8 +34,8 @@ def create_app():
 
     api.init_app(app)
     routes.create_routes(app, user_datastore)
-    profile_routes.create_routes(app, user_datastore)
     quiz_routes.create_routes(app, cache)
+    stats_routes.create_routes(app)
 
     return app
 
@@ -48,11 +48,11 @@ celery.autodiscover_tasks()
 def setup_periodic_tasks(sender, **kwargs):
 
     #Daily reminder
-    sender.add_periodic_task(30.0, daily_reminder.s()) #for testing
+    sender.add_periodic_task(60.0, daily_reminder.s()) #for testing
     # sender.add_periodic_task(crontab(minute=0, hour=18), daily_reminder.s()) #send daily at 6pm
 
     #Monthly report
-    sender.add_periodic_task(45.0, monthly_report.s()) #for testing
+    sender.add_periodic_task(65.0, monthly_report.s()) #for testing
     # sender.add_periodic_task(crontab(0, 0, day_of_month=1), monthly_report.s()) #send 1st of every month
 
 if __name__ == "__main__":

@@ -18,13 +18,14 @@ export default{
             </div>
         </div>
         <div class="row" v-else-if='filteredUpcomingQuizzes.length == 0 && filteredPastQuizzes.length == 0' class="text-center alert alert-warning fw-bold m-4">No Quizzes Found</div>
-        <div class="row gx-1" v-if='filteredUpcomingQuizzes.length > 0'>
+        <div class="row gx-1 overflow-auto" v-if='filteredUpcomingQuizzes.length > 0' style="max-height: 500px">
             <h4>Live & Upcoming</h4>
             <div class="col-auto" v-for="quiz in filteredUpcomingQuizzes">
                 <UserQuizCard :quiz="quiz" :showHeader="true"></UserQuizCard>
             </div>
         </div>
-        <div class="row gx-1" v-if='filteredPastQuizzes.length > 0'>
+        <hr>
+        <div class="row gx-1 my-3 overflow-auto" v-if='filteredPastQuizzes.length > 0' style="max-height: 500px">
             <h4>Past</h4>
             <div class="col-auto" v-for="quiz in filteredPastQuizzes">
                 <UserQuizCard :quiz="quiz" :showHeader="true"></UserQuizCard>

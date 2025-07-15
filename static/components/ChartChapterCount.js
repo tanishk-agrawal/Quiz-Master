@@ -50,7 +50,7 @@ export default {
         console.log(this.chartData, labels, counts);
 
         new Chart(document.getElementById('chapterCountChart'), {
-            type: 'line',
+            type: 'bar',
             data: {
                 labels: labels,
                 datasets: [{
