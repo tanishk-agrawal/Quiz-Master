@@ -1,4 +1,4 @@
-# Quiz Master 🧠
+# 🧩 Quiz Master 
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python)
 ![Flask](https://img.shields.io/badge/Backend-Flask-lightgrey?logo=flask)
@@ -55,6 +55,13 @@ A **role-based multi-user quiz platform** where administrators manage subjects, 
 | **Results**         | `/api/quiz/<int:id>/user/result` |
 | **User History**    | `/api/user/history` |
 | **Performance**     | `/api/user-performance`, `/api/user-performance/<user_id>` |
+
+
+## 🚀 Live Demo & Walkthrough
+
+🎥 [Project Walkthrough Video](https://drive.google.com/file/d/17LolM1Y_JA_X1D-XXQc0wMUdI69nRSRs/view?usp=sharing)
+
+🖼️ [Project Screenshorts](https://drive.google.com/drive/folders/16Yi6XYsZCR-36R2yPZCqIvIXhzHL-0PG?usp=sharing)
 
 
 
